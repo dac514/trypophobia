@@ -1,0 +1,153 @@
+[gd_scene load_steps=11 format=3 uid="uid://cuyq318nwu8hl"]
+
+[ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/rubik/Rubik-Bold.ttf" id="1_yev5y"]
+[ext_resource type="PackedScene" uid="uid://3qigo43ka1i4" path="res://scenes/next_moves.tscn" id="2_gdt2y"]
+[ext_resource type="PackedScene" uid="uid://btg88hxye4yyn" path="res://scenes/chip_eye.tscn" id="3_wm3ai"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tefeu"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ya4ey"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.5803922, 0.23137255, 0.3764706, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_85g3d"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.22745098, 0.38039216, 0.32156864, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o6xl0"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.05882353, 0.2, 0.14509805, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_choun"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.5803922, 0.23137255, 0.3764706, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tipki"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0, 0, 0, 0.88235295)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="Theme" id="Theme_85g3d"]
+default_font = ExtResource("1_yev5y")
+default_font_size = 18
+Button/font_sizes/font_size = 42
+Button/styles/disabled = SubResource("StyleBoxFlat_tefeu")
+Button/styles/focus = SubResource("StyleBoxFlat_ya4ey")
+Button/styles/hover = SubResource("StyleBoxFlat_85g3d")
+Button/styles/normal = SubResource("StyleBoxFlat_o6xl0")
+Button/styles/pressed = SubResource("StyleBoxFlat_choun")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_tipki")
+
+[node name="UI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_85g3d")
+
+[node name="NextMoves" parent="." instance=ExtResource("2_gdt2y")]
+layout_mode = 0
+offset_left = 37.0
+offset_top = 54.699986
+offset_right = 653.0
+offset_bottom = 246.69998
+scale = Vector2(0.465, 0.465)
+
+[node name="PlayerLabel" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 898.08264
+offset_top = 27.826447
+offset_right = 1204.7946
+offset_bottom = 112.43173
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 20
+theme_override_font_sizes/bold_italics_font_size = 20
+theme_override_font_sizes/italics_font_size = 20
+theme_override_font_sizes/mono_font_size = 20
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="TButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -165.0
+offset_top = -93.0
+offset_right = -99.0
+offset_bottom = -22.0
+grow_horizontal = 0
+grow_vertical = 2
+scale = Vector2(1.5, 1.5)
+focus_mode = 0
+text = "T"
+
+[node name="RButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -167.0
+offset_top = 31.210999
+offset_right = -98.0
+offset_bottom = 102.211
+grow_horizontal = 0
+grow_vertical = 2
+scale = Vector2(1.5, 1.5)
+focus_mode = 0
+text = "R"
+
+[node name="PlayerEye" parent="." instance=ExtResource("3_wm3ai")]
+position = Vector2(1163.229, 198.44067)
+freeze = true

@@ -1,0 +1,25 @@
+[gd_scene load_steps=6 format=3 uid="uid://cu3cvajew1ssc"]
+
+[ext_resource type="PackedScene" uid="uid://nag3vhk10o18" path="res://scenes/board.tscn" id="1_o5qli"]
+[ext_resource type="Script" uid="uid://lq25jewf502y" path="res://scenes/main.gd" id="1_sugp2"]
+[ext_resource type="PackedScene" uid="uid://b0e2mhhknl8rd" path="res://scenes/backgrounds.tscn" id="2_tbgi4"]
+[ext_resource type="PackedScene" uid="uid://cuyq318nwu8hl" path="res://scenes/ui.tscn" id="4_tbgi4"]
+[ext_resource type="PackedScene" uid="uid://d0kc4135ua778" path="res://scenes/pause_screen.tscn" id="5_tefeu"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_sugp2")
+
+[node name="Backgrounds" parent="." instance=ExtResource("2_tbgi4")]
+
+[node name="Board" parent="." instance=ExtResource("1_o5qli")]
+position = Vector2(640, 432)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UI" parent="CanvasLayer" instance=ExtResource("4_tbgi4")]
+unique_name_in_owner = true
+
+[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("5_tefeu")]
+unique_name_in_owner = true
+visible = false
+animation_duration = 0.7

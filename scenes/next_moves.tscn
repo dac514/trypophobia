@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3 uid="uid://3qigo43ka1i4"]
+
+[ext_resource type="Script" uid="uid://cnbmubpmgxi7g" path="res://scenes/next_moves.gd" id="1_du14x"]
+[ext_resource type="Texture2D" uid="uid://cmww7f3ao4qoe" path="res://assets/rotate-180.png" id="2_ipqwr"]
+[ext_resource type="Texture2D" uid="uid://c3r335sthxtmc" path="res://assets/rotate-90.png" id="3_snibl"]
+[ext_resource type="Texture2D" uid="uid://cqjyt17iwsee8" path="res://assets/rotate-0.png" id="4_bik7p"]
+
+[node name="NextMoves" type="HBoxContainer"]
+offset_right = 584.0
+offset_bottom = 192.0
+scale = Vector2(0.25, 0.25)
+theme_override_constants/separation = 20
+script = ExtResource("1_du14x")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 2
+texture = ExtResource("2_ipqwr")
+
+[node name="TextureRect2" type="TextureRect" parent="."]
+layout_mode = 2
+texture = ExtResource("3_snibl")
+
+[node name="TextureRect3" type="TextureRect" parent="."]
+layout_mode = 2
+texture = ExtResource("4_bik7p")

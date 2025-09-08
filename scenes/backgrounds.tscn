@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=3 uid="uid://b0e2mhhknl8rd"]
+
+[ext_resource type="Shader" uid="uid://d3axin3xsb36s" path="res://scenes/fireworks.gdshader" id="1_5lasd"]
+[ext_resource type="Texture2D" uid="uid://dwi52h5v1jqwm" path="res://assets/trypophobia-bg.png" id="2_5lasd"]
+[ext_resource type="Texture2D" uid="uid://r7o1h7sffhlp" path="res://assets/lotus-seeds.png" id="2_egioa"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tefeu"]
+shader = ExtResource("1_5lasd")
+shader_parameter/resolution = Vector2(600, 400)
+shader_parameter/firework_count = 10.0
+shader_parameter/particle_count = 40.0
+shader_parameter/size = 2.0
+shader_parameter/sharpen = 1.5
+shader_parameter/speed = 2.0
+shader_parameter/gravity = 0.9
+shader_parameter/lifetime = 7.0
+
+[node name="Backgrounds" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+
+[node name="Main" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1280.0
+offset_bottom = 720.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_5lasd")
+
+[node name="Fireworks" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_tefeu")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0)
+
+[node name="Lotus" type="TextureRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_egioa")

@@ -1,0 +1,12 @@
+{
+    "godotTools.editorPath.godot4": "c:\\Users\\dac51\\Godot\\Godot_v4.5-rc1_win64.exe",
+    "godotTools.lsp.headless": true,
+    "editor.formatOnPaste": true,
+    "editor.insertSpaces": false,
+    "github.copilot.enable": {
+        "*": false
+    },
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "debug.console.collapseIdenticalLines": false,
+    "files.trimTrailingWhitespace": true
+}

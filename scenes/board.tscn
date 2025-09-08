@@ -1,0 +1,216 @@
+[gd_scene load_steps=14 format=3 uid="uid://nag3vhk10o18"]
+
+[ext_resource type="Script" uid="uid://bgm6vmh8d2l6d" path="res://scenes/board.gd" id="1_qails"]
+[ext_resource type="Script" uid="uid://c4p0wblsq5yee" path="res://scenes/board_rotator.gd" id="2_nglv8"]
+[ext_resource type="Texture2D" uid="uid://bnb2erj7cmqw2" path="res://assets/board-2x.png" id="3_nglv8"]
+[ext_resource type="Shader" uid="uid://drejcc3cc4nhg" path="res://scenes/highlight.gdshader" id="4_fv4ni"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dxjtj"]
+shader = ExtResource("4_fv4ni")
+shader_parameter/Line_Smoothness = 0.045
+shader_parameter/Line_Width = 0.09
+shader_parameter/Brightness = 3.0
+shader_parameter/Rotation_deg = 30.0
+shader_parameter/Distortion = 1.8
+shader_parameter/Speed = 0.3
+shader_parameter/Position = 0.0
+shader_parameter/Position_Min = 0.25
+shader_parameter/Position_Max = 0.5
+shader_parameter/Alpha = 0.800000038
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tx6nw"]
+size = Vector2(576, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_nglv8"]
+size = Vector2(1, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fv4ni"]
+size = Vector2(1, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dxjtj"]
+size = Vector2(1, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dun80"]
+size = Vector2(1, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_c3r7o"]
+size = Vector2(1, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wmvsh"]
+size = Vector2(1, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_n230i"]
+size = Vector2(1, 800)
+
+[node name="Board" type="Node2D"]
+script = ExtResource("1_qails")
+
+[node name="BoardRotator" type="Node2D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_nglv8")
+
+[node name="Sprite2D" type="TextureRect" parent="BoardRotator"]
+offset_left = -288.0
+offset_top = -288.0
+offset_right = 864.0
+offset_bottom = 864.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("3_nglv8")
+
+[node name="ColorRect" type="ColorRect" parent="BoardRotator/Sprite2D"]
+material = SubResource("ShaderMaterial_dxjtj")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.711792
+offset_top = 0.07086182
+offset_right = 4.711792
+offset_bottom = 0.07080078
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GridCollision" type="StaticBody2D" parent="."]
+
+[node name="Floor" type="CollisionShape2D" parent="GridCollision"]
+position = Vector2(0, 288)
+shape = SubResource("RectangleShape2D_tx6nw")
+
+[node name="Col" type="CollisionShape2D" parent="GridCollision"]
+position = Vector2(-287, -112)
+shape = SubResource("RectangleShape2D_nglv8")
+
+[node name="Col2" type="CollisionShape2D" parent="GridCollision"]
+position = Vector2(-191, -112)
+shape = SubResource("RectangleShape2D_fv4ni")
+
+[node name="Col3" type="CollisionShape2D" parent="GridCollision"]
+position = Vector2(-95, -112)
+shape = SubResource("RectangleShape2D_dxjtj")
+
+[node name="Col4" type="CollisionShape2D" parent="GridCollision"]
+position = Vector2(1, -112)
+shape = SubResource("RectangleShape2D_dun80")
+
+[node name="Col5" type="CollisionShape2D" parent="GridCollision"]
+position = Vector2(97, -112)
+shape = SubResource("RectangleShape2D_c3r7o")
+
+[node name="Col6" type="CollisionShape2D" parent="GridCollision"]
+position = Vector2(193, -112)
+shape = SubResource("RectangleShape2D_wmvsh")
+
+[node name="Col7" type="CollisionShape2D" parent="GridCollision"]
+position = Vector2(289, -112)
+shape = SubResource("RectangleShape2D_n230i")
+
+[node name="ChipPositions" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Pos_0_0" type="Node2D" parent="ChipPositions"]
+position = Vector2(-240, -240)
+
+[node name="Pos_0_1" type="Node2D" parent="ChipPositions"]
+position = Vector2(-144, -240)
+
+[node name="Pos_0_2" type="Node2D" parent="ChipPositions"]
+position = Vector2(-48, -240)
+
+[node name="Pos_0_3" type="Node2D" parent="ChipPositions"]
+position = Vector2(48, -240)
+
+[node name="Pos_0_4" type="Node2D" parent="ChipPositions"]
+position = Vector2(144, -240)
+
+[node name="Pos_0_5" type="Node2D" parent="ChipPositions"]
+position = Vector2(240, -240)
+
+[node name="Pos_1_0" type="Node2D" parent="ChipPositions"]
+position = Vector2(-240, -144)
+
+[node name="Pos_1_1" type="Node2D" parent="ChipPositions"]
+position = Vector2(-144, -144)
+
+[node name="Pos_1_2" type="Node2D" parent="ChipPositions"]
+position = Vector2(-48, -144)
+
+[node name="Pos_1_3" type="Node2D" parent="ChipPositions"]
+position = Vector2(48, -144)
+
+[node name="Pos_1_4" type="Node2D" parent="ChipPositions"]
+position = Vector2(144, -144)
+
+[node name="Pos_1_5" type="Node2D" parent="ChipPositions"]
+position = Vector2(240, -144)
+
+[node name="Pos_2_0" type="Node2D" parent="ChipPositions"]
+position = Vector2(-240, -48)
+
+[node name="Pos_2_1" type="Node2D" parent="ChipPositions"]
+position = Vector2(-144, -48)
+
+[node name="Pos_2_2" type="Node2D" parent="ChipPositions"]
+position = Vector2(-48, -48)
+
+[node name="Pos_2_3" type="Node2D" parent="ChipPositions"]
+position = Vector2(48, -48)
+
+[node name="Pos_2_4" type="Node2D" parent="ChipPositions"]
+position = Vector2(144, -48)
+
+[node name="Pos_2_5" type="Node2D" parent="ChipPositions"]
+position = Vector2(240, -48)
+
+[node name="Pos_3_0" type="Node2D" parent="ChipPositions"]
+position = Vector2(-240, 48)
+
+[node name="Pos_3_1" type="Node2D" parent="ChipPositions"]
+position = Vector2(-144, 48)
+
+[node name="Pos_3_2" type="Node2D" parent="ChipPositions"]
+position = Vector2(-48, 48)
+
+[node name="Pos_3_3" type="Node2D" parent="ChipPositions"]
+position = Vector2(48, 48)
+
+[node name="Pos_3_4" type="Node2D" parent="ChipPositions"]
+position = Vector2(144, 48)
+
+[node name="Pos_3_5" type="Node2D" parent="ChipPositions"]
+position = Vector2(240, 48)
+
+[node name="Pos_4_0" type="Node2D" parent="ChipPositions"]
+position = Vector2(-240, 144)
+
+[node name="Pos_4_1" type="Node2D" parent="ChipPositions"]
+position = Vector2(-144, 144)
+
+[node name="Pos_4_2" type="Node2D" parent="ChipPositions"]
+position = Vector2(-48, 144)
+
+[node name="Pos_4_3" type="Node2D" parent="ChipPositions"]
+position = Vector2(48, 144)
+
+[node name="Pos_4_4" type="Node2D" parent="ChipPositions"]
+position = Vector2(144, 144)
+
+[node name="Pos_4_5" type="Node2D" parent="ChipPositions"]
+position = Vector2(240, 144)
+
+[node name="Pos_5_0" type="Node2D" parent="ChipPositions"]
+position = Vector2(-240, 240)
+
+[node name="Pos_5_1" type="Node2D" parent="ChipPositions"]
+position = Vector2(-144, 240)
+
+[node name="Pos_5_2" type="Node2D" parent="ChipPositions"]
+position = Vector2(-48, 240)
+
+[node name="Pos_5_3" type="Node2D" parent="ChipPositions"]
+position = Vector2(48, 240)
+
+[node name="Pos_5_4" type="Node2D" parent="ChipPositions"]
+position = Vector2(144, 240)
+
+[node name="Pos_5_5" type="Node2D" parent="ChipPositions"]
+position = Vector2(240, 240)

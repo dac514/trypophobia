@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=3 uid="uid://dmvuwr6c75jmq"]
+
+[ext_resource type="Script" uid="uid://bvx1goxkq2a4p" path="res://scenes/chip_bomb.gd" id="1_jkx5q"]
+[ext_resource type="Texture2D" uid="uid://57hujac7vuxt" path="res://assets/bomb-2x.png" id="2_101x2"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_su0yu"]
+bounce = 0.3
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_su0yu"]
+radius = 46.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_101x2"]
+size = Vector2(144, 144)
+
+[node name="ChipBomb" type="RigidBody2D"]
+physics_material_override = SubResource("PhysicsMaterial_su0yu")
+gravity_scale = 2.5
+lock_rotation = true
+contact_monitor = true
+script = ExtResource("1_jkx5q")
+
+[node name="BombBackground" type="Sprite2D" parent="."]
+position = Vector2(13.372605, -13.164349)
+scale = Vector2(0.59, 0.59)
+texture = ExtResource("2_101x2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_su0yu")
+
+[node name="ExplodingArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExplodingArea"]
+shape = SubResource("RectangleShape2D_101x2")
