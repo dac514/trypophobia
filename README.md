@@ -1,5 +1,7 @@
 # Trypophobia
 
+Play it online here: https://dac514.itch.io/trypophobia
+
 Get four eyeballs in a row to win.
 
 Wins are only counted after the rotation finishes. The board rotates randomly after each turn. The next 3 rotations are shown in the upper left corner.

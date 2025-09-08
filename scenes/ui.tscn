@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3 uid="uid://cuyq318nwu8hl"]
 
-[ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/rubik/Rubik-Bold.ttf" id="1_yev5y"]
+[ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/Rubik-Bold.ttf" id="1_yev5y"]
 [ext_resource type="PackedScene" uid="uid://3qigo43ka1i4" path="res://scenes/next_moves.tscn" id="2_gdt2y"]
 [ext_resource type="PackedScene" uid="uid://btg88hxye4yyn" path="res://scenes/chip_eye.tscn" id="3_wm3ai"]
 
@@ -88,6 +88,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
 theme = SubResource("Theme_85g3d")
 
 [node name="NextMoves" parent="." instance=ExtResource("2_gdt2y")]
@@ -111,12 +113,12 @@ theme_override_font_sizes/bold_font_size = 20
 theme_override_font_sizes/bold_italics_font_size = 20
 theme_override_font_sizes/italics_font_size = 20
 theme_override_font_sizes/mono_font_size = 20
+text = "Trypophobia 👾 💣 👁️"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="TButton" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 6
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
@@ -132,8 +134,7 @@ focus_mode = 0
 text = "T"
 
 [node name="RButton" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 6
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
