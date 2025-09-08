@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3 uid="uid://cuyq318nwu8hl"]
 
-[ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/rubik/Rubik-Bold.ttf" id="1_yev5y"]
+[ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/Rubik-Bold.ttf" id="1_yev5y"]
 [ext_resource type="PackedScene" uid="uid://3qigo43ka1i4" path="res://scenes/next_moves.tscn" id="2_gdt2y"]
 [ext_resource type="PackedScene" uid="uid://btg88hxye4yyn" path="res://scenes/chip_eye.tscn" id="3_wm3ai"]
 
@@ -111,6 +111,7 @@ theme_override_font_sizes/bold_font_size = 20
 theme_override_font_sizes/bold_italics_font_size = 20
 theme_override_font_sizes/italics_font_size = 20
 theme_override_font_sizes/mono_font_size = 20
+text = "Trypophobia 👾 💣 👁️"
 horizontal_alignment = 2
 vertical_alignment = 1
 

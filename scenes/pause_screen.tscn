@@ -1,6 +1,6 @@
 [gd_scene load_steps=13 format=3 uid="uid://d0kc4135ua778"]
 
-[ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/rubik/Rubik-Bold.ttf" id="1_gchx3"]
+[ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/Rubik-Bold.ttf" id="1_gchx3"]
 [ext_resource type="Script" uid="uid://c5g5ifvvi8brj" path="res://scenes/pause_screen.gd" id="2_qeunj"]
 [ext_resource type="Shader" uid="uid://cl4sba8rav4mj" path="res://scenes/blur.gdshader" id="3_hr2n2"]
 
