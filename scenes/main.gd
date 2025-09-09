@@ -20,6 +20,7 @@ var current_player_id: int = 2
 var current_turn: int = 0
 var is_against_bot: bool = false
 var is_waiting_to_drop: bool = false
+var is_dragging_touch: bool = false
 
 @onready var board: Board = $Board
 
@@ -70,6 +71,8 @@ func _connect_board() -> void:
 func _process(_delta: float) -> void:
 	if current_chip:
 		var pos := get_global_mouse_position()
+		if is_dragging_touch:
+			pos = current_chip.global_position
 		current_chip.global_cursor_position = pos
 		if is_waiting_to_drop:
 			follow_chip(pos)
@@ -77,10 +80,25 @@ func _process(_delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if is_waiting_to_drop:
-		# Mouse click to drop
-		if event.is_action_pressed("click") and can_drop_chip(get_global_mouse_position()):
+		# Handle mouse click to drop
+		if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT and (event as InputEventMouseButton).pressed and can_drop_chip(get_global_mouse_position()):
 			drop_chip()
-		# Keyboard controls
+		# Handle touch events
+		elif event is InputEventScreenTouch:
+			var touch_event := event as InputEventScreenTouch
+			if touch_event.pressed:
+				is_dragging_touch = true
+				# Start dragging from touch position
+				follow_chip(touch_event.position)
+			else:
+				is_dragging_touch = false
+				# On release, check drop area
+				if can_drop_chip(touch_event.position):
+					drop_chip(touch_event.position)
+		elif event is InputEventScreenDrag and is_dragging_touch:
+			# Update chip position during drag
+			follow_chip((event as InputEventScreenDrag).position)
+		# Keyboard controls (unchanged)
 		elif event.is_action_pressed("toggle_chip"):
 			await _trigger_button_press(t_button)
 		elif event.is_action_pressed("toggle_feature"):
@@ -224,6 +242,7 @@ func spawn_chip() -> void:
 		chip_scene = preload("res://scenes/chip_bomb.tscn")
 		fireworks_bg.visible = true
 	current_chip = chip_scene.instantiate()
+	current_chip.z_index = 1 if current_chip_type == Globals.ChipType.EYE else 2
 	current_chip.player_id = current_player_id
 	current_chip.disable_physics(true)
 	add_child(current_chip)
