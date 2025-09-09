@@ -20,7 +20,6 @@ var current_player_id: int = 2
 var current_turn: int = 0
 var is_against_bot: bool = false
 var is_waiting_to_drop: bool = false
-var is_dragging_touch: bool = false
 
 @onready var board: Board = $Board
 
@@ -71,8 +70,6 @@ func _connect_board() -> void:
 func _process(_delta: float) -> void:
 	if current_chip:
 		var pos := get_global_mouse_position()
-		if is_dragging_touch:
-			pos = current_chip.global_position
 		current_chip.global_cursor_position = pos
 		if is_waiting_to_drop:
 			follow_chip(pos)
@@ -80,25 +77,15 @@ func _process(_delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if is_waiting_to_drop:
-		# Handle mouse click to drop
-		if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT and (event as InputEventMouseButton).pressed and can_drop_chip(get_global_mouse_position()):
-			drop_chip()
-		# Handle touch events
+		# Click to drop
+		var pos := get_global_mouse_position()
+		if event is InputEventMouse:
+			pos = (event as InputEventMouse).position
 		elif event is InputEventScreenTouch:
-			var touch_event := event as InputEventScreenTouch
-			if touch_event.pressed:
-				is_dragging_touch = true
-				# Start dragging from touch position
-				follow_chip(touch_event.position)
-			else:
-				is_dragging_touch = false
-				# On release, check drop area
-				if can_drop_chip(touch_event.position):
-					drop_chip(touch_event.position)
-		elif event is InputEventScreenDrag and is_dragging_touch:
-			# Update chip position during drag
-			follow_chip((event as InputEventScreenDrag).position)
-		# Keyboard controls (unchanged)
+			pos = (event as InputEventScreenTouch).position
+		if event.is_action_pressed("click") and can_drop_chip(pos):
+			drop_chip(pos)
+		# Keyboard controls
 		elif event.is_action_pressed("toggle_chip"):
 			await _trigger_button_press(t_button)
 		elif event.is_action_pressed("toggle_feature"):
