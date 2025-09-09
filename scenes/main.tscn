@@ -9,17 +9,19 @@
 [node name="Main" type="Node2D"]
 script = ExtResource("1_sugp2")
 
-[node name="Backgrounds" parent="." instance=ExtResource("2_tbgi4")]
-
 [node name="Board" parent="." instance=ExtResource("1_o5qli")]
+z_index = 1
 position = Vector2(640, 432)
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="Backgrounds" parent="." instance=ExtResource("2_tbgi4")]
 
-[node name="UI" parent="CanvasLayer" instance=ExtResource("4_tbgi4")]
+[node name="UI" parent="Backgrounds" instance=ExtResource("4_tbgi4")]
 unique_name_in_owner = true
+layout_mode = 1
 
-[node name="PauseScreen" parent="CanvasLayer" instance=ExtResource("5_tefeu")]
+[node name="PauseScreen" parent="Backgrounds" instance=ExtResource("5_tefeu")]
 unique_name_in_owner = true
 visible = false
+z_index = 2
+layout_mode = 1
 animation_duration = 0.7

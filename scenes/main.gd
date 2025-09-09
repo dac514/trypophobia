@@ -224,6 +224,7 @@ func spawn_chip() -> void:
 		chip_scene = preload("res://scenes/chip_bomb.tscn")
 		fireworks_bg.visible = true
 	current_chip = chip_scene.instantiate()
+	current_chip.z_index = 1 if current_chip_type == Globals.ChipType.EYE else 2
 	current_chip.player_id = current_player_id
 	current_chip.disable_physics(true)
 	add_child(current_chip)
