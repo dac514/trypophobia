@@ -67,29 +67,41 @@ func _connect_board() -> void:
 	)
 
 
-func _process(_delta: float) -> void:
-	if current_chip:
-		var pos := get_global_mouse_position()
-		current_chip.global_cursor_position = pos
-		if is_waiting_to_drop:
-			follow_chip(pos)
-
-
 func _input(event: InputEvent) -> void:
-	if is_waiting_to_drop:
-		# Click to drop
-		var pos := get_global_mouse_position()
-		if event is InputEventMouse:
-			pos = (event as InputEventMouse).position
-		elif event is InputEventScreenTouch:
-			pos = (event as InputEventScreenTouch).position
-		if event.is_action_pressed("click") and can_drop_chip(pos):
+	if not is_waiting_to_drop:
+		return
+
+	@warning_ignore_start("UNSAFE_PROPERTY_ACCESS")
+
+	# Chip follows the mouse
+	var pos := Vector2.ZERO
+	if (event is InputEventMouseMotion or event is InputEventScreenDrag) and current_chip:
+		pos = event.position
+		current_chip.global_cursor_position = pos
+		follow_chip(pos)
+		return
+
+	# Track click position
+	if event is InputEventScreenTouch:
+		pos = event.position
+		if event.pressed:
+			follow_chip(pos)
+			return
+		elif can_drop_chip(pos):
+			pos = event.position
 			drop_chip(pos)
-		# Keyboard controls
-		elif event.is_action_pressed("toggle_chip"):
-			await _trigger_button_press(t_button)
-		elif event.is_action_pressed("toggle_feature"):
-			await _trigger_button_press(r_button)
+			return
+	elif event is InputEventMouseButton and event.pressed:
+		pos = event.position
+
+	@warning_ignore_restore("UNSAFE_PROPERTY_ACCESS")
+
+	if event.is_action_pressed("click") and can_drop_chip(pos):
+		drop_chip(pos)
+	elif event.is_action_pressed("toggle_chip"):
+		await _trigger_button_press(t_button)
+	elif event.is_action_pressed("toggle_feature"):
+		await _trigger_button_press(r_button)
 
 
 func _trigger_button_press(b: Button) -> void:

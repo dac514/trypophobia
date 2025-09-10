@@ -1,6 +1,7 @@
 class_name BotWorker
 extends Thread
 
+@warning_ignore('unused_signal')
 signal bot_worker_finished(best_move: BotMove)
 
 ## Maximum search depth for minimax algorithm
