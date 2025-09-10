@@ -19,6 +19,7 @@ var current_chip_type: Globals.ChipType = Globals.ChipType.EYE
 var current_player_id: int = 2
 var current_turn: int = 0
 var is_against_bot: bool = false
+var is_mobile_device: bool = false;
 var is_waiting_to_drop: bool = false
 
 @onready var board: Board = $Board
@@ -37,6 +38,7 @@ var is_waiting_to_drop: bool = false
 @onready var main_bg: TextureRect = $Backgrounds/Main
 
 func _ready() -> void:
+	_is_mobile_device()
 	_connect_board()
 	t_button.pressed.connect(func() -> void:
 		if is_waiting_to_drop:
@@ -58,6 +60,10 @@ func _ready() -> void:
 		pause_screen.toggle()
 
 
+func _is_mobile_device() -> void:
+	is_mobile_device = DisplayServer.is_touchscreen_available()
+
+
 func _connect_board() -> void:
 	board.board_has_settled.connect(func() -> void:
 		start_new_turn.call_deferred()
@@ -71,9 +77,17 @@ func _input(event: InputEvent) -> void:
 	if not is_waiting_to_drop:
 		return
 
+	if event.is_action_pressed("toggle_chip"):
+		await _trigger_button_press(t_button)
+		return
+
+	if event.is_action_pressed("toggle_feature"):
+		await _trigger_button_press(r_button)
+		return
+
 	@warning_ignore_start("UNSAFE_PROPERTY_ACCESS")
 
-	# Chip follows the mouse
+	# Track mouse/finger
 	var pos := Vector2.ZERO
 	if (event is InputEventMouseMotion or event is InputEventScreenDrag) and current_chip:
 		pos = event.position
@@ -81,27 +95,24 @@ func _input(event: InputEvent) -> void:
 		follow_chip(pos)
 		return
 
-	# Track click position
+	# Track click/touch
+	var is_click: bool = false
 	if event is InputEventScreenTouch:
 		pos = event.position
 		if event.pressed:
 			follow_chip(pos)
 			return
-		elif can_drop_chip(pos):
+		else:
+			is_click = true
 			pos = event.position
-			drop_chip(pos)
-			return
-	elif event is InputEventMouseButton and event.pressed:
+	elif event is InputEventMouseButton and event.pressed and not is_mobile_device:
+		is_click = true
 		pos = event.position
 
 	@warning_ignore_restore("UNSAFE_PROPERTY_ACCESS")
 
-	if event.is_action_pressed("click") and can_drop_chip(pos):
+	if is_click and can_drop_chip(pos):
 		drop_chip(pos)
-	elif event.is_action_pressed("toggle_chip"):
-		await _trigger_button_press(t_button)
-	elif event.is_action_pressed("toggle_feature"):
-		await _trigger_button_press(r_button)
 
 
 func _trigger_button_press(b: Button) -> void:
@@ -201,7 +212,7 @@ func game_over(player_id: int) -> void:
 		new_text = "GAME OVER\nIt's a tie!"
 
 	player_label.text = new_text
-	player_eye.player_id = player_id
+	player_eye.player_id = 1 if player_id == 1 else 2
 	player_eye.update_texture()
 
 	await get_tree().create_timer(5.0).timeout
