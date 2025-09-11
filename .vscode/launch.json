@@ -3,7 +3,6 @@
 	// https://github.com/godotengine/godot-vscode-plugin?tab=readme-ov-file#gdscript-debugger
 	"version": "0.2.0",
 	"configurations": [
-	
 		{
 			"name": "GDScript: Launch Project",
 			"type": "godot",
