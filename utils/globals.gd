@@ -4,17 +4,21 @@ class_name Globals
 enum ChipType { EYE, BOMB, PACMAN }
 
 static var game_info := """
-[url=back_to_menu]< Back[/url]
+[url=back_to_menu][font_size=22]< Back[/font_size][/url]
 
-Get four eyeballs in a row to win.
+👁️ Get four eyeballs in a row to win.
 
 Wins are only counted after the rotation finishes. The board rotates randomly after each turn. The next 3 rotations are shown in the upper left corner.
 
-When it's your turn, click the column where you want to drop your eyeball.
+Press T to toggle special chips. Press R to rotate special chips.
 
-Press T to toggle special chips. Press R to rotate special chips. Bombs destroy adjacent eyeballs. Mushroom chips destroy facing eyeballs.
+💣 Bombs destroy adjacent eyeballs.
+
+👾 Mushroom chips destroy facing eyeballs.
 
 Choose "Play Bot" to play against the AI. Choose "Pass & Play" to play against a friend. The AI can take up to 5 seconds to make a move.
+
+When it's your turn, click the column where you want to drop your eyeball.
 
 Credits:
 
@@ -26,5 +30,5 @@ Made in Godot
 
 Code available on [url=https://github.com/dac514/trypophobia]GitHub[/url][/font_size]
 
-[url=back_to_menu]< Back[/url]
+[url=back_to_menu][font_size=22]< Back[/font_size][/url]
 """
