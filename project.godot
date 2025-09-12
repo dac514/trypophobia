@@ -14,6 +14,9 @@ config/name="Trypophobia"
 config/description="Get four eyeballs in a row to win."
 run/main_scene="uid://cu3cvajew1ssc"
 config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/bg_color=Color(1, 1, 1, 1)
+boot_splash/fullsize=false
+boot_splash/image="uid://rwv2fql470gf"
 config/icon="res://icon.png"
 
 [debug]
