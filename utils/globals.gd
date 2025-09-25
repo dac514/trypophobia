@@ -4,7 +4,7 @@ class_name Globals
 enum ChipType { EYE, BOMB, PACMAN }
 
 static var game_info := """
-[url=back_to_menu][font_size=22]< Back[/font_size][/url]
+[url=back_to_menu][font_size=32]< Back[/font_size][/url]
 
 👁️ Get four eyeballs in a row to win.
 
@@ -26,9 +26,9 @@ Game by Dac Chartrand
 Art by [url=https://www.deviantart.com/dackcode]dackcode[/url]
 Made in Godot
 
-[font_size=10]With help from: [url=https://www.gdquest.com]GDQuest[/url], [url=https://godotshaders.com/shader/2d-fireworks]fencerdevlog[/url], [url=https://godotshaders.com/shader/highlight-canvasitem]andich-xyz[/url], [url=https://opengameart.org/content/2d-explosion-animations-frame-by-frame]sinestesiaguy[/url]
+[font_size=14]With help from: [url=https://www.gdquest.com]GDQuest[/url], [url=https://godotshaders.com/shader/2d-fireworks]fencerdevlog[/url], [url=https://godotshaders.com/shader/highlight-canvasitem]andich-xyz[/url], [url=https://opengameart.org/content/2d-explosion-animations-frame-by-frame]sinestesiaguy[/url]
 
 Code available on [url=https://github.com/dac514/trypophobia]GitHub[/url][/font_size]
 
-[url=back_to_menu][font_size=22]< Back[/font_size][/url]
+[url=back_to_menu][font_size=32]< Back[/font_size][/url]
 """
