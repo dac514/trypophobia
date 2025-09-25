@@ -87,7 +87,7 @@ func _input(event: InputEvent) -> void:
 
 	@warning_ignore_start("UNSAFE_PROPERTY_ACCESS")
 
-	# Track mouse/finger
+	# Track mouse/finger/stylus
 	var pos := Vector2.ZERO
 	if (event is InputEventMouseMotion or event is InputEventScreenDrag) and current_chip:
 		pos = event.position
@@ -95,19 +95,20 @@ func _input(event: InputEvent) -> void:
 		follow_chip(pos)
 		return
 
-	# Track click/touch
 	var is_click: bool = false
 	if event is InputEventScreenTouch:
+		# Tracks finger
 		pos = event.position
 		if event.pressed:
 			follow_chip(pos)
 			return
 		else:
 			is_click = true
-			pos = event.position
-	elif event is InputEventMouseButton and event.pressed and not is_mobile_device:
-		is_click = true
+	elif event is InputEventMouseButton:
+		# Tracks desktop click/release AND stylus press/release
 		pos = event.position
+		if not event.pressed:
+			is_click = true
 
 	@warning_ignore_restore("UNSAFE_PROPERTY_ACCESS")
 
