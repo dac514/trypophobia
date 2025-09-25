@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://xs5fe6e44ice"]
-
-[ext_resource type="Script" uid="uid://b24om2we3pruq" path="res://scratch.gd" id="1_sffi3"]
-
-[node name="Scratch" type="Node"]
-script = ExtResource("1_sffi3")

@@ -225,6 +225,7 @@ func game_over(player_id: int) -> void:
 ## Drop the current chip onto the board
 func drop_chip(pos: Vector2 = Vector2.ZERO) -> void:
 	is_waiting_to_drop = false
+	next_moves.stop_animation()
 	if pos != Vector2.ZERO:
 		follow_chip(pos)
 	current_chip.disable_physics(false)

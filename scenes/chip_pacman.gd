@@ -78,7 +78,7 @@ func rotate_to_direction(direction: String) -> void:
 	var tween := create_tween()
 	tween.tween_property(pacman, "rotation", final_angle, rotate_duration)
 	tween.parallel().tween_property(munching_area, "rotation", final_angle, rotate_duration)
-	tween.tween_callback(Callable(self, "_normalize_angles"))
+	tween.tween_callback(func() -> void: _normalize_angles())
 
 
 # Normalize angles to stay within 0 to TAU range
