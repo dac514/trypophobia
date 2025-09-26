@@ -90,7 +90,14 @@ func run() -> void:
 					var temp_board: BotBoard = board.simulate_move_and_rotation(move, player_id, next_rotation_states)
 					score = _minimax(temp_board, dynamic_depth, -INF, INF, false, player_id, chip_inventory, next_rotation_states)
 
-				if score > best_score:
+				# Prioritize EYE when scores are equal (>= for EYE, > for special chips)
+				var should_update: bool = false
+				if chip_type == Globals.ChipType.EYE:
+					should_update = score >= best_score  # EYE wins ties
+				else:
+					should_update = score > best_score   # Special chips need higher score
+
+				if should_update:
 					best_score = score
 					if chip_type == Globals.ChipType.PACMAN:
 						var directions: Array = ["right", "down", "left"]
@@ -210,9 +217,13 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 		return eval
 
 	# Check if thinking time has exceeded
-	if Time.get_ticks_msec() - start_time > MAX_THINKING_TIME * 1000:
+	var elapsed_time_ms := Time.get_ticks_msec() - start_time
+	if elapsed_time_ms > MAX_THINKING_TIME * 1000:
 		print("Bot: Thinking time exceeded, cutting off search")
 		return board.evaluate_position(current_player_id)
+
+	# Check if we're running out of time (90% of max time used)
+	var is_time_pressured := elapsed_time_ms > (MAX_THINKING_TIME * 0.9) * 1000
 
 	# If we've used all known rotation states, use a simpler evaluation with reduced depth
 	if rotation_states.size() == 0:
@@ -220,13 +231,16 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 			# Reduce depth for unknown rotations to avoid excessive computation
 			return _minimax(board, 1, alpha, beta, maximizing, current_player_id, current_chip_inventory, [])
 		else:
-			return board.evaluate_position(current_player_id)
+			var eval := board.evaluate_position(current_player_id)
+			transposition_table[hash_key] = eval
+			return eval
 
 	var valid_moves: Array = board.get_valid_moves()
 	var chip_types: Array = [Globals.ChipType.EYE, Globals.ChipType.BOMB, Globals.ChipType.PACMAN]
 
 	# Only limit moves if there are too many (board-size relative)
 	var max_moves: int = max(3, board.GRID_SIZE.x)
+	var evaluated_all_moves: bool = valid_moves.size() <= max_moves
 	if valid_moves.size() > max_moves:
 		valid_moves = valid_moves.slice(0, max_moves)
 
@@ -237,6 +251,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 	if maximizing:
 		# Maximizing
 		var max_eval: float = -INF
+		var search_was_cutoff: bool = false
 		for chip_type: int in chip_types:
 			var player_inventory: Dictionary = current_chip_inventory.get(current_player_id, {}) as Dictionary
 			var available_count: int = player_inventory.get(chip_type, 0) as int
@@ -270,13 +285,20 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 					max_eval = max(max_eval, eval)
 					alpha = max(alpha, eval)
 					if beta <= alpha:
+						search_was_cutoff = true
 						break
-		transposition_table[hash_key] = max_eval
+				if search_was_cutoff:
+					break
+
+		# Only cache if we evaluated all moves, search wasn't cut off, and we're not time-pressured
+		if evaluated_all_moves and not search_was_cutoff and not is_time_pressured:
+			transposition_table[hash_key] = max_eval
 		return max_eval
 	else:
 		# Minimizing
 		var min_eval: float = INF
 		var opponent_id: int = 3 - current_player_id
+		var search_was_cutoff: bool = false
 		for chip_type: int in chip_types:
 			var opponent_inventory: Dictionary = current_chip_inventory.get(opponent_id, {}) as Dictionary
 			var available_count: int = opponent_inventory.get(chip_type, 0) as int
@@ -310,8 +332,14 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 					min_eval = min(min_eval, eval)
 					beta = min(beta, eval)
 					if beta <= alpha:
+						search_was_cutoff = true
 						break
-		transposition_table[hash_key] = min_eval
+				if search_was_cutoff:
+					break
+
+		# Only cache if we evaluated all moves, search wasn't cut off, and we're not time-pressured
+		if evaluated_all_moves and not search_was_cutoff and not is_time_pressured:
+			transposition_table[hash_key] = min_eval
 		return min_eval
 
 
@@ -331,29 +359,36 @@ func _simulate_inventory(inventory: Dictionary, target_player_id: int, chip_type
 
 
 ## Generate hash key for board state
-func _hash_board_state(board: BotBoard, depth: int, maximizing: bool, current_player_id: int, rotation_states: Array, current_chip_inventory: Dictionary) -> String:
-	var key := ""
+func _hash_board_state(board: BotBoard, depth: int, maximizing: bool, current_player_id: int, rotation_states: Array, current_chip_inventory: Dictionary) -> int:
+	var hash_value: int = 0
+	var multiplier: int = 31
 
-	# Board state
-	for col: Array in board.current_board_permutation:
-		for cell: int in col:
-			key += str(cell)
+	# Board state - only hash occupied cells
+	for col_idx: int in board.current_board_permutation.size():
+		var col: Array = board.current_board_permutation[col_idx]
+		for row_idx: int in col.size():
+			var cell: int = col[row_idx]
+			if cell != 0:  # Skip empty cells
+				hash_value = hash_value * multiplier + (cell * 100 + col_idx * 10 + row_idx)
 
-	# Core minimax state
-	key += "_d" + str(depth) + "_m" + str(int(maximizing)) + "_p" + str(current_player_id)
+	# Pack core state into integers
+	hash_value = hash_value * multiplier + depth
+	hash_value = hash_value * multiplier + (1 if maximizing else 0)
+	hash_value = hash_value * multiplier + current_player_id
 
-	# Rotation states
-	key += "_r"
+	# Include ALL rotation states since there are only 3 total
 	for i: int in rotation_states.size():
 		var state: Dictionary = rotation_states[i]
-		key += str(state.get("direction", 0)) + str(state.get("degrees", 0))
+		var dir_val: int = state.get("direction", 0) as int
+		var deg_val: int = state.get("degrees", 0) / 90  # Normalize to 0-3
+		hash_value = hash_value * multiplier + (dir_val * 4 + deg_val)
 
-	# Chip inventories
-	key += "_inv"
-	for player_id_chips: int in [1, 2]:
-		if current_chip_inventory.has(player_id_chips):
-			var inventory: Dictionary = current_chip_inventory[player_id_chips]
-			key += str(inventory.get(Globals.ChipType.BOMB, 0))
-			key += str(inventory.get(Globals.ChipType.PACMAN, 0))
+	# Only special chips affect strategy significantly
+	for player_id_val: int in [1, 2]:
+		if current_chip_inventory.has(player_id_val):
+			var inventory: Dictionary = current_chip_inventory[player_id_val]
+			var bombs: int = inventory.get(Globals.ChipType.BOMB, 0) as int
+			var pacmans: int = inventory.get(Globals.ChipType.PACMAN, 0) as int
+			hash_value = hash_value * multiplier + (bombs * 10 + pacmans)
 
-	return key
+	return hash_value
