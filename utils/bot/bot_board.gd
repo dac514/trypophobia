@@ -187,14 +187,18 @@ func _apply_gravity(current_board: Array) -> Array:
 
 # A helper function to find a continuous line of chips
 func _count_line(current_board: Array, col: int, row: int, direction: Vector2i, player_id: int) -> int:
-	if col < 0 or col >= GRID_SIZE.x or row < 0 or row >= GRID_SIZE.y:
-		return 0
+	var count := 0
+	var current_col := col
+	var current_row := row
 
-	var chip_player_id: int = current_board[col][row]
-	if chip_player_id != player_id:
-		return 0
+	while current_col >= 0 and current_col < GRID_SIZE.x and current_row >= 0 and current_row < GRID_SIZE.y:
+		if current_board[current_col][current_row] != player_id:
+			break
+		count += 1
+		current_col += direction.x
+		current_row += direction.y
 
-	return 1 + _count_line(current_board, col + direction.x, row + direction.y, direction, player_id)
+	return count
 
 
 ## Creates a new BotBoard with a move applied (placement + effects + rotation + gravity)

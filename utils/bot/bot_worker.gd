@@ -11,11 +11,12 @@ const INF = 1e9
 ## Maximum thinking time in seconds
 const MAX_THINKING_TIME = 5.0
 
-var grid_state: Array
-var player_id: int
 var chip_inventory: Dictionary
+var grid_state: Array
 var next_rotation_states: Array
+var player_id: int
 var start_time: int
+var transposition_table: Dictionary = {}
 
 func _init(gs: Array, p: int, ci: Dictionary, nrs: Array) -> void:
 	grid_state = gs
@@ -119,87 +120,94 @@ func _check_win(board: BotBoard, current_player_id: int, current_chip_inventory:
 func _check_block(board: BotBoard, current_player_id: int, current_chip_inventory: Dictionary, rotation_states: Array) -> BotMove:
 	var player_inventory: Dictionary = current_chip_inventory.get(current_player_id, {}) as Dictionary
 	var opponent_id: int = 3 - current_player_id
-	var opponent_can_win_found := false
-	var safe_move: BotMove = null
 	var rotation_states_1 := [rotation_states[0]]
 	var rotation_states_2 := [rotation_states[1]]
 	var board_valid_moves := board.get_valid_moves()
+	var safe_moves: Array[BotMove] = []
+	var opponent_can_win_somewhere := false
 
+	# First pass: evaluate ALL possible moves to categorize them
 	for base_move: BotMove in board_valid_moves:
-		# Try a move with EYE
 		var move := BotMove.new(Globals.ChipType.EYE, base_move.column)
 		var temp_board: BotBoard = board.simulate_move_and_rotation(move, current_player_id, rotation_states_1)
-		# Check all opponent's possible next moves to see if they can win
+
+		# Check if opponent can win after this move
+		var opponent_can_win_after_this_move := false
 		var opp_valid_moves: Array = temp_board.get_valid_moves()
-		var opp_temp_board: BotBoard;
-		var opponent_can_win := false
+
 		for opp_base_move: BotMove in opp_valid_moves:
 			var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
-			opp_temp_board = temp_board.simulate_move_and_rotation(opp_move, opponent_id, rotation_states_2)
+			var opp_temp_board: BotBoard = temp_board.simulate_move_and_rotation(opp_move, opponent_id, rotation_states_2)
 			if opp_temp_board.has_winning_line(opponent_id):
-				print("Opponent has winning line")
-				opp_temp_board.print_ascii_grid()
-				opponent_can_win = true
-				opponent_can_win_found = true
+				print("Opponent has winning line after move column %d" % move.column)
+				opponent_can_win_after_this_move = true
+				opponent_can_win_somewhere = true
 				break
-		if not opponent_can_win:
-			# Track a safe move, but only return it if opponent_can_win_found is true after loop
-			safe_move = move
 
-	# If at least one move allows opponent to win, and we found a safe move, play it
-	if opponent_can_win_found and safe_move != null:
+		# If opponent can't win after this move, it's safe
+		if not opponent_can_win_after_this_move:
+			safe_moves.append(move)
+
+	# If opponent can win somewhere but we have safe moves, pick the first safe move
+	if opponent_can_win_somewhere and safe_moves.size() > 0:
+		var safe_move: BotMove = safe_moves[randi() % safe_moves.size()]
 		print("Bot: Found safe move: Column %d, Chip Type: %d" % [safe_move.column, safe_move.chip_type])
 		return safe_move
 
-	if opponent_can_win_found:
-		# No safe move found, try special chips
+	# If no safe moves with regular chips, try special chips
+	if opponent_can_win_somewhere:
 		var blocking_chip_types := [Globals.ChipType.PACMAN, Globals.ChipType.BOMB]
 		for base_move: BotMove in board_valid_moves:
 			for chip_type: int in blocking_chip_types:
 				var available_count: int = player_inventory.get(chip_type, 0)
 				if available_count > 0:
-					var our_block: BotMove
+					var blocking_moves: Array = []
+
 					if chip_type == Globals.ChipType.PACMAN:
 						var directions: Array = ["right", "down", "left"]
 						for direction: String in directions:
-							our_block = BotMove.new(chip_type, base_move.column, direction)
-							var blocking_board := board.simulate_move_and_rotation(our_block, current_player_id, rotation_states_1)
-							var still_can_win: bool = false
-							var valid_moves_after_block := blocking_board.get_valid_moves()
-							for opp_base_move: BotMove in valid_moves_after_block:
-								var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
-								var opp_temp_board := blocking_board.simulate_move_and_rotation(opp_move, opponent_id, rotation_states_2)
-								if opp_temp_board.has_winning_line(opponent_id):
-									still_can_win = true
-									break
-							if not still_can_win:
-								print("Bot: Found blocking move with Pacman: Column %d, Direction: %s" % [our_block.column, our_block.direction])
-								return our_block
+							blocking_moves.append(BotMove.new(chip_type, base_move.column, direction))
 					else:
-						our_block = BotMove.new(chip_type, base_move.column)
-						var blocking_board := board.simulate_move_and_rotation(our_block, current_player_id, rotation_states_1)
-						var still_can_win: bool = false
+						blocking_moves.append(BotMove.new(chip_type, base_move.column))
+
+					# Test each potential blocking move
+					for blocking_move: BotMove in blocking_moves:
+						var blocking_board := board.simulate_move_and_rotation(blocking_move, current_player_id, rotation_states_1)
+						var still_can_win := false
 						var valid_moves_after_block := blocking_board.get_valid_moves()
+
 						for opp_base_move: BotMove in valid_moves_after_block:
 							var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
 							var opp_temp_board := blocking_board.simulate_move_and_rotation(opp_move, opponent_id, rotation_states_2)
 							if opp_temp_board.has_winning_line(opponent_id):
 								still_can_win = true
 								break
-						if not still_can_win:
-							print("Bot: Found blocking move: Column %d, Chip Type: %d" % [our_block.column, our_block.chip_type])
-							return our_block
 
-	if opponent_can_win_found:
-		print("Failed to block opponent")
+						if not still_can_win:
+							if chip_type == Globals.ChipType.PACMAN:
+								print("Bot: Found blocking move with Pacman: Column %d, Direction: %s" % [blocking_move.column, blocking_move.direction])
+							else:
+								print("Bot: Found blocking move: Column %d, Chip Type: %d" % [blocking_move.column, blocking_move.chip_type])
+							return blocking_move
+
+		print("Failed to block opponent - no safe moves found")
 
 	return null
 
 ## Minimax algorithm with alpha-beta pruning for optimal move evaluation
 func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing: bool, current_player_id: int, current_chip_inventory: Dictionary, rotation_states: Array) -> float:
+	# Create a unique key for this board state
+	var hash_key := _hash_board_state(board, depth, maximizing, current_player_id, rotation_states, current_chip_inventory)
+
+	# Check if we've already evaluated this position
+	if transposition_table.has(hash_key):
+		return transposition_table[hash_key]
+
 	# Stop recursion if we reach the depth limit, game is over, or no more known rotations
 	if depth == 0 or board.is_game_over():
-		return board.evaluate_position(current_player_id)
+		var eval := board.evaluate_position(current_player_id)
+		transposition_table[hash_key] = eval
+		return eval
 
 	# Check if thinking time has exceeded
 	if Time.get_ticks_msec() - start_time > MAX_THINKING_TIME * 1000:
@@ -218,7 +226,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 	var chip_types: Array = [Globals.ChipType.EYE, Globals.ChipType.BOMB, Globals.ChipType.PACMAN]
 
 	# Only limit moves if there are too many (board-size relative)
-	var max_moves: int = max(3, board.GRID_SIZE.x)  # At least 3, or number of columns
+	var max_moves: int = max(3, board.GRID_SIZE.x)
 	if valid_moves.size() > max_moves:
 		valid_moves = valid_moves.slice(0, max_moves)
 
@@ -263,6 +271,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 					alpha = max(alpha, eval)
 					if beta <= alpha:
 						break
+		transposition_table[hash_key] = max_eval
 		return max_eval
 	else:
 		# Minimizing
@@ -302,6 +311,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 					beta = min(beta, eval)
 					if beta <= alpha:
 						break
+		transposition_table[hash_key] = min_eval
 		return min_eval
 
 
@@ -318,3 +328,32 @@ func _simulate_inventory(inventory: Dictionary, target_player_id: int, chip_type
 			player_inventory[chip_type] = max(0, player_inventory[chip_type] - 1)
 
 	return new_inventory
+
+
+## Generate hash key for board state
+func _hash_board_state(board: BotBoard, depth: int, maximizing: bool, current_player_id: int, rotation_states: Array, current_chip_inventory: Dictionary) -> String:
+	var key := ""
+
+	# Board state
+	for col: Array in board.current_board_permutation:
+		for cell: int in col:
+			key += str(cell)
+
+	# Core minimax state
+	key += "_d" + str(depth) + "_m" + str(int(maximizing)) + "_p" + str(current_player_id)
+
+	# Rotation states
+	key += "_r"
+	for i: int in rotation_states.size():
+		var state: Dictionary = rotation_states[i]
+		key += str(state.get("direction", 0)) + str(state.get("degrees", 0))
+
+	# Chip inventories
+	key += "_inv"
+	for player_id_chips: int in [1, 2]:
+		if current_chip_inventory.has(player_id_chips):
+			var inventory: Dictionary = current_chip_inventory[player_id_chips]
+			key += str(inventory.get(Globals.ChipType.BOMB, 0))
+			key += str(inventory.get(Globals.ChipType.PACMAN, 0))
+
+	return key
