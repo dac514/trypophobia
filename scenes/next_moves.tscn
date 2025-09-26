@@ -8,12 +8,12 @@
 [node name="NextMoves" type="HBoxContainer"]
 offset_right = 584.0
 offset_bottom = 192.0
-scale = Vector2(0.25, 0.25)
 theme_override_constants/separation = 20
 script = ExtResource("1_du14x")
 
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 2
+size_flags_horizontal = 4
 texture = ExtResource("2_ipqwr")
 
 [node name="TextureRect2" type="TextureRect" parent="."]

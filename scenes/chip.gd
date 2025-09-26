@@ -25,7 +25,6 @@ func set_visual_rotation(angle: float) -> void
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-		# print("Chip is being freed. Run cleanup code.")
 		chip_has_settled.emit(self)
 		if chip_watcher:
 			chip_watcher.queue_free()
@@ -57,7 +56,6 @@ func lock_into_place(target_pos: Node2D) -> void:
 
 
 func on_chips_settled(chips: Array) -> void:
-	# print("Chip has settled or timeout reached.")
 	for chip: Chip in chips:
 		chip_has_settled.emit(chip)
 	if chip_watcher:

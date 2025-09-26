@@ -229,10 +229,12 @@ func drop_chip(pos: Vector2 = Vector2.ZERO) -> void:
 		follow_chip(pos)
 	current_chip.disable_physics(false)
 	chip_inventory[current_player_id][current_chip_type] -= 1
+	next_moves.stop_animation()
 	await current_chip.chip_has_settled
 	if is_instance_valid(current_chip):
 		board.place_chip(current_chip)
 	board.rotate_and_settle.call_deferred()
+	next_moves.stop_animation() # Stop again, for when bot drops too quickly
 
 
 ## Spawn a new chip

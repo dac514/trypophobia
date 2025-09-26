@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cuyq318nwu8hl"]
+[gd_scene load_steps=12 format=3 uid="uid://cuyq318nwu8hl"]
 
 [ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/Rubik-Bold.ttf" id="1_yev5y"]
 [ext_resource type="PackedScene" uid="uid://3qigo43ka1i4" path="res://scenes/next_moves.tscn" id="2_gdt2y"]
@@ -81,6 +81,8 @@ Button/styles/normal = SubResource("StyleBoxFlat_o6xl0")
 Button/styles/pressed = SubResource("StyleBoxFlat_choun")
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_tipki")
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yev5y"]
+
 [node name="UI" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -94,39 +96,43 @@ theme = SubResource("Theme_85g3d")
 
 [node name="NextMoves" parent="." instance=ExtResource("2_gdt2y")]
 layout_mode = 0
-offset_left = 37.0
-offset_top = 54.699986
-offset_right = 653.0
-offset_bottom = 246.69998
-scale = Vector2(0.465, 0.465)
+offset_left = 24.0
+offset_top = 32.0
+offset_right = 640.0
+offset_bottom = 224.0
+scale = Vector2(0.5, 0.5)
 
 [node name="PlayerLabel" type="RichTextLabel" parent="."]
 layout_mode = 0
-offset_left = 898.08264
-offset_top = 27.826447
-offset_right = 1204.7946
-offset_bottom = 112.43173
+offset_left = 928.0
+offset_top = 32.0
+offset_right = 1238.0
+offset_bottom = 116.605286
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 5
-theme_override_font_sizes/normal_font_size = 20
-theme_override_font_sizes/bold_font_size = 20
-theme_override_font_sizes/bold_italics_font_size = 20
-theme_override_font_sizes/italics_font_size = 20
-theme_override_font_sizes/mono_font_size = 20
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.19607843)
+theme_override_constants/shadow_outline_size = 12
+theme_override_constants/outline_size = 7
+theme_override_font_sizes/normal_font_size = 22
+theme_override_font_sizes/bold_font_size = 22
+theme_override_font_sizes/bold_italics_font_size = 22
+theme_override_font_sizes/italics_font_size = 22
+theme_override_font_sizes/mono_font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxEmpty_yev5y")
 text = "Trypophobia 👾 💣 👁️"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="TButton" type="Button" parent="."]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -165.0
-offset_top = -93.0
-offset_right = -99.0
-offset_bottom = -22.0
+offset_left = -144.0
+offset_top = -99.0
+offset_right = -78.0
+offset_bottom = -28.0
 grow_horizontal = 0
 grow_vertical = 2
 scale = Vector2(1.5, 1.5)
@@ -134,15 +140,16 @@ focus_mode = 0
 text = "T"
 
 [node name="RButton" type="Button" parent="."]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -167.0
-offset_top = 31.210999
-offset_right = -98.0
-offset_bottom = 102.211
+offset_left = -146.0
+offset_top = 28.0
+offset_right = -77.0
+offset_bottom = 99.0
 grow_horizontal = 0
 grow_vertical = 2
 scale = Vector2(1.5, 1.5)
@@ -150,5 +157,5 @@ focus_mode = 0
 text = "R"
 
 [node name="PlayerEye" parent="." instance=ExtResource("3_wm3ai")]
-position = Vector2(1163.229, 198.44067)
+position = Vector2(1184.229, 192.44067)
 freeze = true
