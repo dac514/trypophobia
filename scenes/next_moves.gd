@@ -1,5 +1,9 @@
 class_name NextMoves extends HBoxContainer
 
+const TEX_ROTATE_0 := preload("res://assets/rotate-0.png")
+const TEX_ROTATE_90 := preload("res://assets/rotate-90.png")
+const TEX_ROTATE_180 := preload("res://assets/rotate-180.png")
+
 var animation_tween: Tween
 var is_animation_stopped: bool = false
 
@@ -20,11 +24,11 @@ func draw_next_moves(board: Board) -> void:
 		var tex_rect := TextureRect.new()
 		# Choose texture based on degrees
 		if state.degrees == board.board_rotator.RotationAmount.DEG_90:
-			tex_rect.texture = preload("res://assets/rotate-90.png")
+			tex_rect.texture = TEX_ROTATE_90
 		elif state.degrees == board.board_rotator.RotationAmount.DEG_180:
-			tex_rect.texture = preload("res://assets/rotate-180.png")
+			tex_rect.texture = TEX_ROTATE_180
 		else:
-			tex_rect.texture = preload("res://assets/rotate-0.png")
+			tex_rect.texture = TEX_ROTATE_0
 		# Flip texture based on direction
 		tex_rect.flip_h = (state.direction == board.board_rotator.RotationDirection.RIGHT)
 
