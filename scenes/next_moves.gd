@@ -5,13 +5,8 @@ const TEX_ROTATE_90 := preload("res://assets/rotate-90.png")
 const TEX_ROTATE_180 := preload("res://assets/rotate-180.png")
 
 var animation_tween: Tween
-var is_animation_stopped: bool = false
 
 func draw_next_moves(board: Board) -> void:
-	# Stop any existing animation first
-	stop_animation()
-	is_animation_stopped = false
-
 	# Remove all children from next_moves
 	for child in get_children():
 		child.queue_free()
@@ -41,15 +36,17 @@ func draw_next_moves(board: Board) -> void:
 		tween.tween_property(tex_rect, "modulate:a", 1.0, 0.15)
 
 		# Animate the next move
-		if i == reversed_states.size() - 1 and not is_animation_stopped:
+		if i == reversed_states.size() - 1:
 			tween.tween_callback(func() -> void: _animate_next_move(tex_rect, state, board))
 
 
 func _animate_next_move(tex_rect: TextureRect, state: Dictionary, board: Board) -> void:
 	var is_no_rotation: bool = !(state.degrees == board.board_rotator.RotationAmount.DEG_90 or state.degrees == board.board_rotator.RotationAmount.DEG_180)
 
-	animation_tween = create_tween()
+	# Ensure any previous looping tween is stopped
+	stop_animation()
 
+	animation_tween = create_tween()
 	animation_tween.set_loops()
 	animation_tween.tween_interval(1.0)
 
@@ -80,4 +77,3 @@ func _animate_next_move(tex_rect: TextureRect, state: Dictionary, board: Board) 
 func stop_animation() -> void:
 	if animation_tween and animation_tween.is_valid():
 		animation_tween.kill()
-	is_animation_stopped = true
