@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bgm6vmh8d2l6d" path="res://scenes/board.gd" id="1_qails"]
 [ext_resource type="Script" uid="uid://c4p0wblsq5yee" path="res://scenes/board_rotator.gd" id="2_nglv8"]
-[ext_resource type="Texture2D" uid="uid://bnb2erj7cmqw2" path="res://assets/board-2x.png" id="3_nglv8"]
+[ext_resource type="Texture2D" uid="uid://b07xunispq5rl" path="res://assets/board-2x.webp" id="3_fv4ni"]
 [ext_resource type="Shader" uid="uid://drejcc3cc4nhg" path="res://scenes/highlight.gdshader" id="4_fv4ni"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dxjtj"]
@@ -55,7 +55,7 @@ offset_top = -288.0
 offset_right = 864.0
 offset_bottom = 864.0
 scale = Vector2(0.5, 0.5)
-texture = ExtResource("3_nglv8")
+texture = ExtResource("3_fv4ni")
 
 [node name="ColorRect" type="ColorRect" parent="BoardRotator/Sprite2D"]
 material = SubResource("ShaderMaterial_dxjtj")

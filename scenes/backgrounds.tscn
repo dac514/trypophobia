@@ -2,8 +2,8 @@
 
 [ext_resource type="Shader" uid="uid://d3axin3xsb36s" path="res://scenes/fireworks.gdshader" id="1_5lasd"]
 [ext_resource type="Script" uid="uid://4hwnsgdrh2gx" path="res://scenes/backgrounds.gd" id="1_egioa"]
-[ext_resource type="Texture2D" uid="uid://dwi52h5v1jqwm" path="res://assets/trypophobia-bg.png" id="2_5lasd"]
-[ext_resource type="Texture2D" uid="uid://r7o1h7sffhlp" path="res://assets/lotus-seeds.png" id="2_egioa"]
+[ext_resource type="Texture2D" uid="uid://b6v4x267qryx7" path="res://assets/trypophobia-bg.webp" id="2_egioa"]
+[ext_resource type="Texture2D" uid="uid://3abp4yhjs41n" path="res://assets/lotus-seeds.webp" id="4_r7ipf"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tefeu"]
 shader = ExtResource("1_5lasd")
@@ -30,7 +30,7 @@ offset_bottom = 720.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
-texture = ExtResource("2_5lasd")
+texture = ExtResource("2_egioa")
 
 [node name="Fireworks" type="ColorRect" parent="."]
 visible = false
@@ -51,4 +51,4 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_egioa")
+texture = ExtResource("4_r7ipf")
