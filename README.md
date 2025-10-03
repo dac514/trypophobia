@@ -21,4 +21,3 @@ Art by [dackcode](https://www.deviantart.com/dackcode)
 Made in Godot
 
 With help from: [GDQuest](https://www.gdquest.com), [fencerdevlog](https://godotshaders.com/shader/2d-fireworks), [andich-xyz](https://godotshaders.com/shader/highlight-canvasitem), [sinestesiaguy](https://opengameart.org/content/2d-explosion-animations-frame-by-frame)
-
