@@ -94,12 +94,17 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = SubResource("Theme_85g3d")
 
-[node name="NextMoves" parent="." instance=ExtResource("2_gdt2y")]
-layout_mode = 0
+[node name="Mask" type="Control" parent="."]
+clip_contents = true
+anchors_preset = 0
 offset_left = 24.0
 offset_top = 32.0
-offset_right = 640.0
-offset_bottom = 224.0
+offset_right = 344.0
+offset_bottom = 128.0
+
+[node name="NextMoves" parent="Mask" instance=ExtResource("2_gdt2y")]
+layout_mode = 0
+offset_right = 616.0
 scale = Vector2(0.5, 0.5)
 
 [node name="PlayerLabel" type="RichTextLabel" parent="."]

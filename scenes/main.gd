@@ -24,7 +24,7 @@ var is_waiting_to_drop: bool = false
 
 @onready var board: Board = $Board
 
-@onready var next_moves: NextMoves = %UI/NextMoves
+@onready var next_moves: NextMoves = %UI/Mask/NextMoves
 @onready var pause_screen: PauseScreen = %PauseScreen
 @onready var play_bot_button: Button = %PauseScreen/%PlayBotButton
 @onready var play_friend_button: Button = %PauseScreen/%PlayFriendButton
@@ -158,8 +158,9 @@ func start_new_turn() -> void:
 	update_player_label(true)
 	current_chip_type = Globals.ChipType.EYE
 	spawn_chip()
-	next_moves.draw_next_moves(board)
-	if is_against_bot && current_player_id == 2:
+	var is_bot_turn := is_against_bot && current_player_id == 2
+	next_moves.draw_next_moves(board, is_bot_turn)
+	if is_bot_turn:
 		await make_bot_move()
 
 
