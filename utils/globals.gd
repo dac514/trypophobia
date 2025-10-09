@@ -10,11 +10,11 @@ static var game_info := """
 
 Wins are only counted after the rotation finishes. The board rotates randomly after each turn. The next 3 rotations are shown in the upper left corner.
 
-Press T to toggle special chips. Press R to rotate special chips.
+Press T to toggle special chips.
 
 💣 Bombs destroy adjacent eyeballs.
 
-👾 Mushroom chips destroy facing eyeballs.
+👾 Mushrooms destroy facing eyeballs. Press R to rotate.
 
 Choose "Play Bot" to play against the AI. Choose "Pass & Play" to play against a friend. The AI can take up to 5 seconds to make a move.
 
