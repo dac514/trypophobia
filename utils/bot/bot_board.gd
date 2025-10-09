@@ -44,7 +44,7 @@ func get_valid_drop_moves() -> Array[BotMove]:
 
 
 ## Sets rotated board as current permutation
-func simulate_rotation(rotation_state: Dictionary) -> void:
+func simulate_rotation(rotation_state: Dictionary, move: BotMove) -> void:
 	var direction: int = rotation_state.get("direction", 0)
 	var degrees: int = rotation_state.get("degrees", 0)
 	# Apply rotation transformation (cached)
@@ -56,7 +56,8 @@ func simulate_rotation(rotation_state: Dictionary) -> void:
 	elif degrees == 180:
 		current_board_permutation = _rotate_grid_180(current_board_permutation)
 	else:
-		return
+		if move.chip_type != Globals.ChipType.EYE:
+			current_board_permutation = _apply_gravity(current_board_permutation)
 
 
 func check_for_win(column: int, row: int) -> bool:
@@ -204,7 +205,7 @@ func simulate_move_and_rotation(move: BotMove, player_id: int, next_rotation_sta
 	# Apply rotation if available
 	if next_rotation_states.size() > 0:
 		var rotation_state: Dictionary = next_rotation_states[0]
-		new_board.simulate_rotation(rotation_state)
+		new_board.simulate_rotation(rotation_state, move)
 
 	return new_board
 

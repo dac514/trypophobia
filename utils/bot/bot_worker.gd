@@ -154,6 +154,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 				print("Opponent has winning line after move column %d" % move.column)
 				opponent_can_win_after_this_move = true
 				opponent_can_win_somewhere = true
+				opp_temp_board.print_ascii_grid()
 				break
 
 		# If opponent can't win after this move, it's safe
