@@ -1,13 +1,17 @@
-class_name BotWorker
-extends Thread
+class_name BotWorker extends Thread
+
+## The BotWorker class uses the minimax algorithm with alpha-beta pruning to calculate the optimal move
+## for the AI player.
+##
+## It evaluates moves based on the current board state, chip inventory, and upcoming rotations, with
+## support for special chips like BOMB and PACMAN. The class runs in a thread asynchronously, leveraging
+## a transposition table for caching, and emits the best move once the computation is complete.
 
 @warning_ignore('UNUSED_SIGNAL')
 signal bot_worker_finished(best_move: BotMove)
 
 ## Maximum search depth for minimax algorithm
 const MAX_DEPTH = 5
-## Large value for minimax initialization
-const INF = 1e9
 ## Maximum thinking time in seconds
 const MAX_THINKING_TIME = 5.0
 

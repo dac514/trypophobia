@@ -1,5 +1,11 @@
-class_name BotBoard
-extends RefCounted
+class_name BotBoard extends RefCounted
+
+## The BotBoard class simulates and evaluates game states for the AI bot.
+##
+## It represents the board as a grid of player IDs and provides methods for duplication, chip counting,
+## move validation, rotation, and win detection. By simplifying the board to a grid of integers, avoiding
+## full game objects or physics, it reduces computational overhead, enabling efficient and isolated evaluations
+## for AI decision-making.
 
 const GRID_SIZE: Vector2i = Board.GRID_SIZE
 
