@@ -41,7 +41,8 @@ func run() -> void:
 	var best_move: BotMove
 	var best_score: float = -INF
 	var chip_types: Array = [Globals.ChipType.EYE, Globals.ChipType.BOMB, Globals.ChipType.PACMAN]
-	var board := BotBoard.new(grid_state)
+	var board := BotBoard.new()
+	board.setup(grid_state)
 	var valid_moves: Array = board.get_valid_drop_moves()
 
 	# Default to left column on empty board

@@ -14,36 +14,17 @@ var chip_count: int
 var last_action_meta: Dictionary = {}
 
 
-## Creates a new BotBoard grid with PlayerIDs from a grid of Chip objects or an integer grid
-func _init(grid_state: Array) -> void:
-	var is_int_grid := false
-	if grid_state.size() == GRID_SIZE.x and grid_state[0] is Array and (grid_state[0] as Array).size() == GRID_SIZE.y:
-		var first: Variant = (grid_state[0] as Array)[0]
-		is_int_grid = typeof(first) == TYPE_INT
-
-	if is_int_grid:
-		# grid_state is already an integer grid
-		current_board_permutation = _deep_copy_int_grid(grid_state)
-		chip_count = _count_chips_in_integer_grid(current_board_permutation)
-	else:
-		chip_count = _count_placed_chips(grid_state)
-		current_board_permutation = _convert_grid_of_chips_to_player_ids(grid_state)
-
-
-## Helper to count chips in an integer grid
-func _count_chips_in_integer_grid(grid: Array) -> int:
-	var count: int = 0
-	for col in range(GRID_SIZE.x):
-		for row in range(GRID_SIZE.y):
-			if grid[col][row] != 0:
-				count += 1
-	return count
+## Creates a new BotBoard grid with PlayerIDs from a grid of Chip objects
+func setup(grid_state: Array) -> void:
+	chip_count = _count_placed_chips(grid_state)
+	current_board_permutation = _convert_grid_of_chips_to_player_ids(grid_state)
 
 
 ## Creates a copy of this BotBoard with the same state
 func duplicate() -> BotBoard:
-	var new_board := BotBoard.new(current_board_permutation)
+	var new_board := BotBoard.new()
 	new_board.chip_count = chip_count
+	new_board.current_board_permutation = current_board_permutation.duplicate(true)
 	new_board.last_action_meta = last_action_meta.duplicate(true)
 	return new_board
 
@@ -161,14 +142,6 @@ func _rotate_grid_right_90(current_board: Array) -> Array:
 	return _apply_gravity(rotated_board)
 
 
-## Deep copy an integer grid
-func _deep_copy_int_grid(grid: Array) -> Array:
-	var out: Array = []
-	for col in range(GRID_SIZE.x):
-		out.append((grid[col] as Array).duplicate(true))
-	return out
-
-
 func _rotate_grid_180(current_board: Array) -> Array:
 	var rotated_board: Array = []
 	for col in range(GRID_SIZE.x):
@@ -268,12 +241,6 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 	elif move.chip_type == Globals.ChipType.PACMAN:
 		var before_counts := _count_pieces_by_player(current_board)
 		var direction := _get_pacman_direction(move.direction)
-		# Determine if the adjacent chip belongs to self before applying effect
-		var tx := move.column + direction.x
-		var ty := drop_row + direction.y
-		var ate_own_adjacent := false
-		if tx >= 0 and tx < GRID_SIZE.x and ty >= 0 and ty < GRID_SIZE.y:
-			ate_own_adjacent = current_board[tx][ty] == player_id
 		_apply_pacman_effect(current_board, move.column, drop_row, direction)
 		var after_counts := _count_pieces_by_player(current_board)
 		var self_id := player_id
@@ -284,7 +251,6 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 			"move_type": "pacman",
 			"destroyed_self": destroyed_self,
 			"destroyed_opp": destroyed_opp,
-			"ate_own_adjacent": ate_own_adjacent,
 		}
 
 	return new_board
@@ -312,9 +278,10 @@ func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 		# Weights tuned conservatively
 		base_score += 3.0 * destroyed_opp - 3.5 * destroyed_self
 
-		# Penalize pacman eating own adjacent chip explicitly
-		if last_action_meta.get("move_type", "") == "pacman" and bool(last_action_meta.get("ate_own_adjacent", false)):
-			base_score -= 300.0
+		# Rule for pacman: penalty for eating nothing, or eating self
+		if last_action_meta.get("move_type", "") == "pacman":
+			if destroyed_opp == 0 or destroyed_self >= 2:
+				base_score -= 300.0
 
 		# Rule for bombs: only good if we destroy at least 2 more than we lose
 		if last_action_meta.get("move_type", "") == "bomb":
