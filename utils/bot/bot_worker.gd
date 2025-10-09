@@ -199,6 +199,31 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 
 		print("Failed to block opponent - no safe moves found")
 
+		# Least-bad blocker fallback: choose the move that minimizes opponent immediate wins
+		var best_block_move: BotMove = null
+		var best_block_score: int = 1_000_000
+		for base_move: BotMove in board_valid_moves:
+			var move := BotMove.new(Globals.ChipType.EYE, base_move.column)
+			var temp_board: BotBoard = board.simulate_move_and_rotation(move, current_player_id, rotation_states_1)
+			var opp_valid_moves: Array = temp_board.get_valid_moves()
+			var opp_win_count := 0
+			for opp_base_move: BotMove in opp_valid_moves:
+				var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
+				var opp_temp_board: BotBoard = temp_board.simulate_move_and_rotation(opp_move, opponent_id, rotation_states_2)
+				if opp_temp_board.has_winning_line(opponent_id):
+					opp_win_count += 1
+			# Prefer fewer opponent wins; tie-break toward center columns
+			var center_col: int = int(float(board.GRID_SIZE.x) / 2.0)
+			var tie_break: int = abs(base_move.column - center_col)
+			var composite: int = opp_win_count * 10 + tie_break
+			if composite < best_block_score:
+				best_block_score = composite
+				best_block_move = move
+
+		if best_block_move != null:
+			print("Selecting least-bad rotation blocker: Column %d" % best_block_move.column)
+			return best_block_move
+
 	return null
 
 ## Minimax algorithm with alpha-beta pruning for optimal move evaluation
@@ -212,7 +237,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 
 	# Stop recursion if we reach the depth limit, game is over, or no more known rotations
 	if depth == 0 or board.is_game_over():
-		var eval := board.evaluate_position(current_player_id)
+		var eval := board.evaluate_position(current_player_id, rotation_states)
 		transposition_table[hash_key] = eval
 		return eval
 
@@ -220,7 +245,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 	var elapsed_time_ms := Time.get_ticks_msec() - start_time
 	if elapsed_time_ms > MAX_THINKING_TIME * 1000:
 		print("Bot: Thinking time exceeded, cutting off search")
-		return board.evaluate_position(current_player_id)
+		return board.evaluate_position(current_player_id, rotation_states)
 
 	# Check if we're running out of time (90% of max time used)
 	var is_time_pressured := elapsed_time_ms > (MAX_THINKING_TIME * 0.9) * 1000
@@ -231,7 +256,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 			# Reduce depth for unknown rotations to avoid excessive computation
 			return _minimax(board, 1, alpha, beta, maximizing, current_player_id, current_chip_inventory, [])
 		else:
-			var eval := board.evaluate_position(current_player_id)
+			var eval := board.evaluate_position(current_player_id, rotation_states)
 			transposition_table[hash_key] = eval
 			return eval
 
