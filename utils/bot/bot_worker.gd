@@ -11,7 +11,7 @@ class_name BotWorker extends Thread
 signal bot_worker_finished(best_move: BotMove)
 
 ## Maximum search depth for minimax algorithm
-const MAX_DEPTH = 5
+const MAX_DEPTH = 8
 ## Maximum thinking time in seconds
 const MAX_THINKING_TIME = 5.0
 
@@ -42,7 +42,7 @@ func run() -> void:
 	var best_score: float = -INF
 	var chip_types: Array = [Globals.ChipType.EYE, Globals.ChipType.BOMB, Globals.ChipType.PACMAN]
 	var board := BotBoard.new(grid_state)
-	var valid_moves: Array = board.get_valid_moves()
+	var valid_moves: Array = board.get_valid_drop_moves()
 
 	# Default to left column on empty board
 	if board.chip_count == 0:
@@ -118,7 +118,7 @@ func _check_win(board: BotBoard, current_player_id: int, current_chip_inventory:
 	for chip_type: int in [Globals.ChipType.EYE]:
 		var available_count: int = player_inventory.get(chip_type, 0) as int
 		if available_count > 0:
-			for base_move: BotMove in board.get_valid_moves():
+			for base_move: BotMove in board.get_valid_drop_moves():
 				var move := BotMove.new(chip_type, base_move.column)
 				var temp_board: BotBoard = board.simulate_move_and_rotation(move, current_player_id, rotation_states)
 				if temp_board.has_winning_line(current_player_id):
@@ -133,7 +133,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 	var opponent_id: int = 3 - current_player_id
 	var rotation_states_1 := [rotation_states[0]]
 	var rotation_states_2 := [rotation_states[1]]
-	var board_valid_moves := board.get_valid_moves()
+	var board_valid_moves := board.get_valid_drop_moves()
 	var safe_moves: Array[BotMove] = []
 	var opponent_can_win_somewhere := false
 
@@ -144,7 +144,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 
 		# Check if opponent can win after this move
 		var opponent_can_win_after_this_move := false
-		var opp_valid_moves: Array = temp_board.get_valid_moves()
+		var opp_valid_moves: Array = temp_board.get_valid_drop_moves()
 
 		for opp_base_move: BotMove in opp_valid_moves:
 			var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
@@ -186,7 +186,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 					for blocking_move: BotMove in blocking_moves:
 						var blocking_board := board.simulate_move_and_rotation(blocking_move, current_player_id, rotation_states_1)
 						var still_can_win := false
-						var valid_moves_after_block := blocking_board.get_valid_moves()
+						var valid_moves_after_block := blocking_board.get_valid_drop_moves()
 
 						for opp_base_move: BotMove in valid_moves_after_block:
 							var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
@@ -242,7 +242,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 		for base_move: BotMove in board_valid_moves:
 			var move := BotMove.new(Globals.ChipType.EYE, base_move.column)
 			var temp_board: BotBoard = board.simulate_move_and_rotation(move, current_player_id, rotation_states_1)
-			var opp_valid_moves: Array = temp_board.get_valid_moves()
+			var opp_valid_moves: Array = temp_board.get_valid_drop_moves()
 			var opp_win_count := 0
 			for opp_base_move: BotMove in opp_valid_moves:
 				var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
@@ -266,7 +266,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 ## Minimax algorithm with alpha-beta pruning for optimal move evaluation
 func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing: bool, current_player_id: int, current_chip_inventory: Dictionary, rotation_states: Array) -> float:
 	# Create a unique key for this board state
-	var hash_key := _hash_board_state(board, depth, maximizing, current_player_id, rotation_states, current_chip_inventory)
+	var hash_key := _hash_board_state(board, depth, maximizing, current_player_id, current_chip_inventory, rotation_states)
 
 	# Check if we've already evaluated this position
 	if transposition_table.has(hash_key):
@@ -297,7 +297,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 			transposition_table[hash_key] = eval
 			return eval
 
-	var valid_moves: Array = board.get_valid_moves()
+	var valid_moves: Array = board.get_valid_drop_moves()
 	var chip_types: Array = [Globals.ChipType.EYE, Globals.ChipType.BOMB, Globals.ChipType.PACMAN]
 
 	# Only limit moves if there are too many (board-size relative)
@@ -421,7 +421,7 @@ func _simulate_inventory(inventory: Dictionary, target_player_id: int, chip_type
 
 
 ## Generate hash key for board state
-func _hash_board_state(board: BotBoard, depth: int, maximizing: bool, current_player_id: int, rotation_states: Array, current_chip_inventory: Dictionary) -> int:
+func _hash_board_state(board: BotBoard, depth: int, maximizing: bool, current_player_id: int, current_chip_inventory: Dictionary, rotation_states: Array) -> int:
 	var hash_value: int = 0
 	var multiplier: int = 31
 

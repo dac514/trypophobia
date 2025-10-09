@@ -14,10 +14,20 @@ var chip_count: int
 var last_action_meta: Dictionary = {}
 
 
-## Creates a new BotBoard grid with PlayerIDs from a grid of Chip objects
+## Creates a new BotBoard grid with PlayerIDs from a grid of Chip objects or an integer grid
 func _init(grid_state: Array) -> void:
-	chip_count = _count_placed_chips(grid_state)
-	current_board_permutation = _convert_grid_of_chips_to_player_ids(grid_state)
+	var is_int_grid := false
+	if grid_state.size() == GRID_SIZE.x and grid_state[0] is Array and (grid_state[0] as Array).size() == GRID_SIZE.y:
+		var first: Variant = (grid_state[0] as Array)[0]
+		is_int_grid = typeof(first) == TYPE_INT
+
+	if is_int_grid:
+		# grid_state is already an integer grid
+		current_board_permutation = _deep_copy_int_grid(grid_state)
+		chip_count = _count_chips_in_integer_grid(current_board_permutation)
+	else:
+		chip_count = _count_placed_chips(grid_state)
+		current_board_permutation = _convert_grid_of_chips_to_player_ids(grid_state)
 
 
 ## Helper to count chips in an integer grid
@@ -32,23 +42,17 @@ func _count_chips_in_integer_grid(grid: Array) -> int:
 
 ## Creates a copy of this BotBoard with the same state
 func duplicate() -> BotBoard:
-	var original_grid: Array = []
-	for col in range(GRID_SIZE.x):
-		var column: Array = []
-		for row in range(GRID_SIZE.y):
-			column.append(null)
-		original_grid.append(column)
-
-	var new_board := BotBoard.new(original_grid)
+	var new_board := BotBoard.new(current_board_permutation)
 	new_board.chip_count = chip_count
-	new_board.current_board_permutation = current_board_permutation.duplicate(true)
 	new_board.last_action_meta = last_action_meta.duplicate(true)
 	return new_board
 
 
 ## Gets all valid column moves for current board state
-func get_valid_moves() -> Array:
-	var moves: Array = []
+## Returns one placeholder per open column using EYE as a neutral default
+## May override chip_type & direction when expanding actual actions
+func get_valid_drop_moves() -> Array[BotMove]:
+	var moves: Array[BotMove] = []
 	for col in range(GRID_SIZE.x):
 		# Check if the top row of this column is empty (can drop chip)
 		if current_board_permutation[col][0] == 0:
@@ -127,7 +131,7 @@ func _rotate_grid_left_90(current_board: Array) -> Array:
 
 	for col in range(GRID_SIZE.x):
 		for row in range(GRID_SIZE.y):
-			# Right 90°: (col,row) -> (row, GRID_SIZE.y-1-col)
+			# Left 90° (CCW): (col,row) -> (row, GRID_SIZE.y-1-col)
 			var new_col: int = row
 			var new_row: int = GRID_SIZE.y - 1 - col
 			if new_col < GRID_SIZE.x and new_row < GRID_SIZE.y:
@@ -147,7 +151,7 @@ func _rotate_grid_right_90(current_board: Array) -> Array:
 
 	for col in range(GRID_SIZE.x):
 		for row in range(GRID_SIZE.y):
-			# Left 90°: (col,row) -> (GRID_SIZE.x-1-row, col)
+			# Right 90° (CW): (col,row) -> (GRID_SIZE.x-1-row, col)
 			var new_col: int = GRID_SIZE.x - 1 - row
 			var new_row: int = col
 			if new_col < GRID_SIZE.x and new_row < GRID_SIZE.y:
@@ -155,6 +159,14 @@ func _rotate_grid_right_90(current_board: Array) -> Array:
 				rotated_board[new_col][new_row] = player_id
 
 	return _apply_gravity(rotated_board)
+
+
+## Deep copy an integer grid
+func _deep_copy_int_grid(grid: Array) -> Array:
+	var out: Array = []
+	for col in range(GRID_SIZE.x):
+		out.append((grid[col] as Array).duplicate(true))
+	return out
 
 
 func _rotate_grid_180(current_board: Array) -> Array:
