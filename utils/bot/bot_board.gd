@@ -5,6 +5,7 @@ const GRID_SIZE: Vector2i = Board.GRID_SIZE
 
 var current_board_permutation: Array
 var chip_count: int
+var last_action_meta: Dictionary = {}
 
 
 ## Creates a new BotBoard grid with PlayerIDs from a grid of Chip objects
@@ -35,6 +36,7 @@ func duplicate() -> BotBoard:
 	var new_board := BotBoard.new(original_grid)
 	new_board.chip_count = chip_count
 	new_board.current_board_permutation = current_board_permutation.duplicate(true)
+	new_board.last_action_meta = last_action_meta.duplicate(true)
 	return new_board
 
 
@@ -67,15 +69,19 @@ func simulate_rotation(rotation_state: Dictionary) -> void:
 
 
 func check_for_win(column: int, row: int) -> bool:
-	var player_id: int = current_board_permutation[column][row]
+	return _check_for_win_on(current_board_permutation, column, row)
+
+
+func _check_for_win_on(board_arr: Array, column: int, row: int) -> bool:
+	var player_id: int = board_arr[column][row]
 	if player_id == 0:
 		return false
 
 	var directions: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)]
 	for direction in directions:
 		var chips_in_a_row := 1
-		chips_in_a_row += _count_line(current_board_permutation, column + direction.x, row + direction.y, direction, player_id)
-		chips_in_a_row += _count_line(current_board_permutation, column - direction.x, row - direction.y, Vector2i(-direction.x, -direction.y), player_id)
+		chips_in_a_row += _count_line(board_arr, column + direction.x, row + direction.y, direction, player_id)
+		chips_in_a_row += _count_line(board_arr, column - direction.x, row - direction.y, Vector2i(-direction.x, -direction.y), player_id)
 		if chips_in_a_row >= 4:
 			return true
 
@@ -217,6 +223,9 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 	var new_board := duplicate()
 	var current_board := new_board.current_board_permutation
 
+	# Reset meta by default
+	new_board.last_action_meta = {}
+
 	# Step 1: Place the chip
 	var drop_row: int = _find_drop_row(current_board, move.column)
 	if drop_row == -1:
@@ -226,10 +235,39 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 
 	# Step 2: Apply chip effects only
 	if move.chip_type == Globals.ChipType.BOMB:
+		var before_counts := _count_pieces_by_player(current_board)
 		_apply_bomb_effect(current_board, move.column, drop_row)
+		var after_counts := _count_pieces_by_player(current_board)
+		var self_id := player_id
+		var opp_id := 3 - player_id
+		var destroyed_self: int = max(0, int(before_counts.get(self_id, 0)) - int(after_counts.get(self_id, 0)))
+		var destroyed_opp: int = max(0, int(before_counts.get(opp_id, 0)) - int(after_counts.get(opp_id, 0)))
+		new_board.last_action_meta = {
+			"move_type": "bomb",
+			"destroyed_self": destroyed_self,
+			"destroyed_opp": destroyed_opp,
+		}
 	elif move.chip_type == Globals.ChipType.PACMAN:
+		var before_counts := _count_pieces_by_player(current_board)
 		var direction := _get_pacman_direction(move.direction)
+		# Determine if the adjacent chip belongs to self before applying effect
+		var tx := move.column + direction.x
+		var ty := drop_row + direction.y
+		var ate_own_adjacent := false
+		if tx >= 0 and tx < GRID_SIZE.x and ty >= 0 and ty < GRID_SIZE.y:
+			ate_own_adjacent = current_board[tx][ty] == player_id
 		_apply_pacman_effect(current_board, move.column, drop_row, direction)
+		var after_counts := _count_pieces_by_player(current_board)
+		var self_id := player_id
+		var opp_id := 3 - player_id
+		var destroyed_self: int = max(0, int(before_counts.get(self_id, 0)) - int(after_counts.get(self_id, 0)))
+		var destroyed_opp: int = max(0, int(before_counts.get(opp_id, 0)) - int(after_counts.get(opp_id, 0)))
+		new_board.last_action_meta = {
+			"move_type": "pacman",
+			"destroyed_self": destroyed_self,
+			"destroyed_opp": destroyed_opp,
+			"ate_own_adjacent": ate_own_adjacent,
+		}
 
 	return new_board
 
@@ -245,61 +283,51 @@ func has_winning_line(player_id: int) -> bool:
 
 
 ## Evaluates board position strength for the given player
-func evaluate_position(player_id: int) -> float:
-	var score: float = 0.0
-	var opponent_id: int = 3 - player_id
+func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
+	# Base score on current snapshot
+	var base_score := _score_board_array(current_board_permutation, player_id)
 
-	# Check for immediate wins/losses
-	for col in range(GRID_SIZE.x):
-		for row in range(GRID_SIZE.y):
-			var chip_player_id: int = current_board_permutation[col][row]
-			if chip_player_id != 0:
-				if check_for_win(col, row):
-					if chip_player_id == player_id:
-						return 1000.0  # Win
-					else:
-						return -1000.0  # Loss
+	# Bomb/Pacman delta: discourage self-damage
+	if last_action_meta.has("move_type"):
+		var destroyed_self: int = int(last_action_meta.get("destroyed_self", 0))
+		var destroyed_opp: int = int(last_action_meta.get("destroyed_opp", 0))
+		# Weights tuned conservatively
+		base_score += 3.0 * destroyed_opp - 3.5 * destroyed_self
 
-	# Evaluate positions and potential lines
-	for col in range(GRID_SIZE.x):
-		for row in range(GRID_SIZE.y):
-			var chip_player_id: int = current_board_permutation[col][row]
-			if chip_player_id != 0:
-				var player_multiplier: int = 1 if chip_player_id == player_id else -1
+		# Penalize pacman eating own adjacent chip explicitly
+		if last_action_meta.get("move_type", "") == "pacman" and bool(last_action_meta.get("ate_own_adjacent", false)):
+			base_score -= 300.0
 
-				# Reduced center control bonus (less relevant with rotations)
-				var center_distance: float = abs(col - GRID_SIZE.x / 2.0) + abs(row - GRID_SIZE.y / 2.0)
-				score += player_multiplier * max(0, 2.0 - center_distance * 0.5)  # Lower weight
+		# Rule for bombs: only good if we destroy at least 2 more than we lose
+		if last_action_meta.get("move_type", "") == "bomb":
+			var ratio_ok := destroyed_opp >= destroyed_self + 2
+			if not ratio_ok:
+				# Strong penalty to avoid non-emergency bombs
+				var shortfall := (destroyed_self + 2) - destroyed_opp
+				base_score -= 300.0 + float(shortfall) * 100.0
+			# If the bomb leaves an immediate opponent win, punish heavily
+			var opp_id := 3 - player_id
+			if _opponent_can_win_in_one(current_board_permutation, opp_id):
+				base_score -= 500.0
 
-				# Bonus for bottom rows (chips settle here after gravity)
-				var bottom_bonus: float = (GRID_SIZE.y - row) * 3.0  # Higher for lower rows
-				score += player_multiplier * bottom_bonus
+	# Rotation projections over up to next 3 known rotations
+	var r_weights := [0.7, 0.2, 0.1]
+	var proj_score := 0.0
+	var work_array := current_board_permutation.duplicate(true)
+	for i in range(min(3, rotation_states.size())):
+		work_array = _apply_rotation_to_array(work_array, rotation_states[i])
+		var w := float(r_weights[i])
+		proj_score += w * _score_board_array(work_array, player_id)
 
-				# Bonus for corner-adjacent positions (likely to cluster)
-				var corner_bonus: float = 0.0
-				if (col == 0 or col == GRID_SIZE.x - 1) and (row == 0 or row == GRID_SIZE.y - 1):
-					corner_bonus = 5.0
-				score += player_multiplier * corner_bonus
+	# Threat stress: if opponent has a one-move win after the very next rotation
+	if rotation_states.size() > 0:
+		var after_r1 := _apply_rotation_to_array(current_board_permutation, rotation_states[0])
+		var opp_id := 3 - player_id
+		if _opponent_can_win_in_one(after_r1, opp_id):
+			base_score -= 600.0
 
-				# Enhanced line evaluation with blocking heuristic
-				var line_score: float = _evaluate_lines_from_position(current_board_permutation, col, row, chip_player_id)
-				if player_multiplier == -1:  # Opponent chip: penalize more for threats
-					line_score *= 1.5  # Increase penalty for opponent lines
-				score += player_multiplier * line_score
-
-	# Add mobility bonus: Favor positions with more valid moves
-	var valid_moves: Array = get_valid_moves()
-	score += valid_moves.size() * 5.0  # Slight bonus for flexibility
-
-	# Simple threat detection: Penalize if opponent has 3-in-a-row potential
-	for col in range(GRID_SIZE.x):
-		for row in range(GRID_SIZE.y):
-			if current_board_permutation[col][row] == opponent_id:
-				var opp_line_score: float = _evaluate_lines_from_position(current_board_permutation, col, row, opponent_id)
-				if opp_line_score >= 9:  # Threshold for 3-in-a-row (3^2)
-					score -= 50.0  # Strong penalty for threats
-
-	return score
+	# Blend scores; if no projections, just base
+	return base_score + proj_score
 
 
 ## Check if game is over (all columns full)
@@ -308,6 +336,18 @@ func is_game_over() -> bool:
 		if current_board_permutation[col][0] == 0:
 			return false
 	return true
+
+
+# A debug function to print the board state in ASCII format
+func print_ascii_grid() -> void:
+	print("-- GRID STATE BOT --") # Divider before grid
+	for row in range(GRID_SIZE.y):
+		var line := ""
+		for col in range(GRID_SIZE.x):
+			var player_id: int = current_board_permutation[col][row]
+			line += str(player_id) + " "
+		print(line)
+	print("------------------") # Divider after grid
 
 
 func _find_drop_row(current_board: Array, column: int) -> int:
@@ -393,13 +433,90 @@ func _evaluate_lines_from_position(current_board: Array, col: int, row: int, pla
 	return line_score
 
 
-# A debug function to print the board state in ASCII format
-func print_ascii_grid() -> void:
-	print("-- GRID STATE BOT --") # Divider before grid
-	for row in range(GRID_SIZE.y):
-		var line := ""
-		for col in range(GRID_SIZE.x):
-			var player_id: int = current_board_permutation[col][row]
-			line += str(player_id) + " "
-		print(line)
-	print("------------------") # Divider after grid
+func _score_board_array(board_arr: Array, player_id: int) -> float:
+	var score: float = 0.0
+	var opponent_id: int = 3 - player_id
+
+	# Short-circuit: if anyone already has 4 in a row, return win/loss now
+	for col in range(GRID_SIZE.x):
+		for row in range(GRID_SIZE.y):
+			var chip_player_id: int = board_arr[col][row]
+			if chip_player_id != 0:
+				if _check_for_win_on(board_arr, col, row):
+					return 1000.0 if chip_player_id == player_id else -1000.0
+
+	# Positional and line potentials
+	for col in range(GRID_SIZE.x):
+		for row in range(GRID_SIZE.y):
+			var chip_player_id: int = board_arr[col][row]
+			if chip_player_id != 0:
+				var pmul := 1 if chip_player_id == player_id else -1
+
+				# Bottom weight (gravity-friendly)
+				var bottom_bonus: float = (GRID_SIZE.y - row) * 3.0
+				score += pmul * bottom_bonus
+
+				# Mild center bias
+				var center_distance: float = abs(col - GRID_SIZE.x / 2.0) + abs(row - GRID_SIZE.y / 2.0)
+				score += pmul * max(0.0, 1.5 - center_distance * 0.4)
+
+				# Lines
+				var line_score := _evaluate_lines_from_position(board_arr, col, row, chip_player_id)
+				if pmul == -1:
+					line_score *= 1.4
+				score += pmul * line_score
+
+	# Reward having more columns you can still drop into
+	var valid_count := 0
+	for c in range(GRID_SIZE.x):
+		if board_arr[c][0] == 0:
+			valid_count += 1
+	score += float(valid_count) * 5.0
+
+	# Opponent 3-in-a-row threat penalty
+	for col in range(GRID_SIZE.x):
+		for row in range(GRID_SIZE.y):
+			if board_arr[col][row] == opponent_id:
+				var opp_line_score := _evaluate_lines_from_position(board_arr, col, row, opponent_id)
+				if opp_line_score >= 9.0:
+					score -= 50.0
+
+	return score
+
+
+func _apply_rotation_to_array(board_arr: Array, rotation_state: Dictionary) -> Array:
+	var direction: int = rotation_state.get("direction", 0)
+	var degrees: int = rotation_state.get("degrees", 0)
+	if degrees == 90:
+		return _rotate_grid_right_90(board_arr) if direction == 1 else _rotate_grid_left_90(board_arr)
+	elif degrees == 180:
+		return _rotate_grid_180(board_arr)
+	else:
+		return board_arr.duplicate(true)
+
+
+func _opponent_can_win_in_one(board_arr: Array, opponent_id: int) -> bool:
+	for col in range(GRID_SIZE.x):
+		if board_arr[col][0] != 0:
+			continue
+		var drop_row := _find_drop_row(board_arr, col)
+		if drop_row == -1:
+			continue
+		board_arr[col][drop_row] = opponent_id
+		var wins := _check_for_win_on(board_arr, col, drop_row)
+		board_arr[col][drop_row] = 0
+		if wins:
+			return true
+	return false
+
+
+func _count_pieces_by_player(board_arr: Array) -> Dictionary:
+	var counts: Dictionary = {}
+	counts[1] = 0
+	counts[2] = 0
+	for c in range(GRID_SIZE.x):
+		for r in range(GRID_SIZE.y):
+			var v: int = board_arr[c][r]
+			if v == 1 or v == 2:
+				counts[v] = counts.get(v, 0) + 1
+	return counts
