@@ -164,6 +164,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 	# If no safe moves with regular chips, try special chips
 	if opponent_can_win_somewhere:
 		var blocking_chip_types := [Globals.ChipType.PACMAN, Globals.ChipType.BOMB]
+		var bomb_candidates: Array = []
 		for base_move: BotMove in board_valid_moves:
 			for chip_type: int in blocking_chip_types:
 				var available_count: int = player_inventory.get(chip_type, 0)
@@ -193,9 +194,41 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 						if not still_can_win:
 							if chip_type == Globals.ChipType.PACMAN:
 								print("Bot: Found blocking move with Pacman: Column %d, Direction: %s" % [blocking_move.column, blocking_move.direction])
+								return blocking_move
 							else:
-								print("Bot: Found blocking move: Column %d, Chip Type: %d" % [blocking_move.column, blocking_move.chip_type])
-							return blocking_move
+								# Collect bomb candidate to choose the least self-destructive later
+								var meta := blocking_board.last_action_meta
+								var self_d: int = int(meta.get("destroyed_self", 0))
+								var opp_d: int = int(meta.get("destroyed_opp", 0))
+								var center_col: int = int(float(board.GRID_SIZE.x) / 2.0)
+								var tie: int = abs(blocking_move.column - center_col)
+								bomb_candidates.append({
+									"move": blocking_move,
+									"self_d": self_d,
+									"opp_d": opp_d,
+									"tie": tie,
+								})
+
+		# If any bomb candidates were collected, choose the least self-destructive one
+		if bomb_candidates.size() > 0:
+			print("Bot: Bomb block candidates considered: %d" % bomb_candidates.size())
+			var best_move: BotMove = null
+			var best_self_d: int = 1_000_000
+			var best_opp_d: int = -1
+			var best_tie: int = 1_000_000
+			for cand: Dictionary in bomb_candidates:
+				var cdict: Dictionary = cand
+				var self_d: int = int(cdict.get("self_d", 0))
+				var opp_d: int = int(cdict.get("opp_d", 0))
+				var tie: int = int(cdict.get("tie", 0))
+				if self_d < best_self_d or (self_d == best_self_d and (opp_d > best_opp_d or (opp_d == best_opp_d and tie < best_tie))):
+					best_self_d = self_d
+					best_opp_d = opp_d
+					best_tie = tie
+					best_move = cdict.get("move")
+			if best_move != null:
+				print("Bot: Optimized bomb block: Column %d (self -%d, opp -%d)" % [best_move.column, best_self_d, best_opp_d])
+				return best_move
 
 		print("Failed to block opponent - no safe moves found")
 
