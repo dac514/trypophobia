@@ -250,6 +250,12 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 	elif move.chip_type == Globals.ChipType.PACMAN:
 		var before_counts := _count_pieces_by_player(current_board)
 		var direction := _get_pacman_direction(move.direction)
+		# Determine if the adjacent chip belongs to self before applying effect
+		var tx := move.column + direction.x
+		var ty := drop_row + direction.y
+		var ate_own_adjacent := false
+		if tx >= 0 and tx < GRID_SIZE.x and ty >= 0 and ty < GRID_SIZE.y:
+			ate_own_adjacent = current_board[tx][ty] == player_id
 		_apply_pacman_effect(current_board, move.column, drop_row, direction)
 		var after_counts := _count_pieces_by_player(current_board)
 		var self_id := player_id
@@ -260,6 +266,7 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 			"move_type": "pacman",
 			"destroyed_self": destroyed_self,
 			"destroyed_opp": destroyed_opp,
+			"ate_own_adjacent": ate_own_adjacent,
 		}
 
 	return new_board
@@ -286,6 +293,10 @@ func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 		var destroyed_opp: int = int(last_action_meta.get("destroyed_opp", 0))
 		# Weights tuned conservatively
 		base_score += 3.0 * destroyed_opp - 3.5 * destroyed_self
+
+		# Penalize pacman eating own adjacent chip explicitly
+		if last_action_meta.get("move_type", "") == "pacman" and bool(last_action_meta.get("ate_own_adjacent", false)):
+			base_score -= 300.0
 
 		# Rule for bombs: only good if we destroy at least 2 more than we lose
 		if last_action_meta.get("move_type", "") == "bomb":
