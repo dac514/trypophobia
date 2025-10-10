@@ -109,7 +109,7 @@ func run() -> void:
 					else:
 						best_move = BotMove.new(chip_type, base_move.column)
 
-	print("*** Best score: " + str(best_score))
+	print("Best score: " + str(best_score))
 
 	call_deferred("emit_signal", "bot_worker_finished", best_move)
 
@@ -153,9 +153,9 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 			var opp_temp_board: BotBoard = temp_board.simulate_move_and_rotation(opp_move, opponent_id, rotation_states_2)
 			if opp_temp_board.has_winning_line(opponent_id):
 				print("Opponent has winning line after move column %d" % move.column)
+				# opp_temp_board.print_ascii_grid()
 				opponent_can_win_after_this_move = true
 				opponent_can_win_somewhere = true
-				opp_temp_board.print_ascii_grid()
 				break
 
 		# If opponent can't win after this move, it's safe
