@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://dl51r4x4hbehw"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_du14x"]
+
+[node name="DegreesHint" type="RichTextLabel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/default_color = Color(0.85882354, 0.65882355, 0.91764706, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5882353)
+theme_override_constants/shadow_outline_size = 12
+theme_override_constants/outline_size = 7
+theme_override_font_sizes/normal_font_size = 78
+theme_override_styles/normal = SubResource("StyleBoxEmpty_du14x")
+text = "180°"
+horizontal_alignment = 1
+vertical_alignment = 1

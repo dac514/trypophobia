@@ -1,8 +1,9 @@
 class_name NextMoves extends HBoxContainer
 
 const TEX_ROTATE_0 := preload("res://assets/rotate-0.png")
-const TEX_ROTATE_90 := preload("res://assets/rotate-90.png")
-const TEX_ROTATE_180 := preload("res://assets/rotate-180.png")
+const TEX_ROTATE_90 := preload("res://assets/rotate-90.webp")
+const TEX_ROTATE_180 := preload("res://assets/rotate-180.webp")
+const TEX_ROTATE_HINT := preload("res://scenes/degrees_hint.tscn")
 
 const SLIDE_DISTANCE := 212.0
 
@@ -96,6 +97,22 @@ func _animate_next_move(tex_rect: TextureRect, state: Dictionary) -> void:
 	# Ensure any previous looping tween is stopped
 	stop_animation()
 
+	# Add hint label
+	var hint := TEX_ROTATE_HINT.instantiate() as RichTextLabel
+	if state.degrees == BoardRotator.RotationAmount.DEG_90:
+		hint.text = "90°"
+	elif state.degrees == BoardRotator.RotationAmount.DEG_180:
+		hint.text = "180°"
+	else:
+		hint.text = "0°"
+	hint.modulate.a = 0.0
+	hint.pivot_offset = tex_rect.texture.get_size() / 2
+	tex_rect.add_child(hint)
+
+	# Fade in the hint label
+	var fade_in_tween := create_tween()
+	fade_in_tween.tween_property(hint, "modulate:a", 1.0, 0.3).set_ease(Tween.EASE_OUT)
+
 	rotation_preview_tween = create_tween()
 	rotation_preview_tween.set_loops()
 	rotation_preview_tween.tween_interval(1.0)
@@ -113,11 +130,14 @@ func _animate_next_move(tex_rect: TextureRect, state: Dictionary) -> void:
 			rotation_step = -rotation_step
 		rotation_preview_tween.tween_callback(
 			func() -> void:
-				if is_instance_valid(tex_rect):
+				if is_instance_valid(tex_rect) and is_instance_valid(hint):
 					var current := tex_rect.rotation
 					var target := current + rotation_step
 					var sub_tween := create_tween()
+					sub_tween.set_parallel(true)
 					sub_tween.tween_property(tex_rect, "rotation", target, 0.6 if is_90 else 0.9)
+					# Counter-rotate the hint to keep it upright
+					sub_tween.tween_property(hint, "rotation", hint.rotation - rotation_step, 0.6 if is_90 else 0.9)
 		)
 		rotation_preview_tween.tween_interval(0.6 if is_90 else 0.9)
 

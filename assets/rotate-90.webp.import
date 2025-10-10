@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3r335sthxtmc"
-path="res://.godot/imported/rotate-90.png-fa96d236e60059e842cb786a3aede081.ctex"
+uid="uid://bsrsogbyf4qrm"
+path="res://.godot/imported/rotate-90.webp-b611af8d1f996faabbf6c4f9acae44e0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/rotate-90.png"
-dest_files=["res://.godot/imported/rotate-90.png-fa96d236e60059e842cb786a3aede081.ctex"]
+source_file="res://assets/rotate-90.webp"
+dest_files=["res://.godot/imported/rotate-90.webp-b611af8d1f996faabbf6c4f9acae44e0.ctex"]
 
 [params]
 
