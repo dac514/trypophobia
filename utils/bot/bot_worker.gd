@@ -69,6 +69,7 @@ func run() -> void:
 
 	start_time = Time.get_ticks_msec()
 	var dynamic_depth := MAX_DEPTH
+	var directions: Array = ["right", "down", "left"]
 	for chip_type: int in chip_types:
 		var player_inventory: Dictionary = chip_inventory.get(player_id, {}) as Dictionary
 		var available_count: int = player_inventory.get(chip_type, 0) as int
@@ -77,9 +78,8 @@ func run() -> void:
 				var score: float
 				var best_dir_idx: int = 0
 				if [Globals.ChipType.PACMAN].has(chip_type):
-					# Chip with special power
+					# Simulate moves for every useful direction
 					var best_dir_score: float = -INF
-					var directions: Array = ["right", "down", "left"]
 					for dir_idx: int in range(directions.size()):
 						var direction: String = directions[dir_idx]
 						var move := BotMove.new(chip_type, base_move.column, direction)
@@ -90,7 +90,7 @@ func run() -> void:
 							best_dir_idx = dir_idx
 					score = best_dir_score
 				else:
-					# Regular chip
+					# Similuate move
 					var move := BotMove.new(chip_type, base_move.column)
 					var temp_board: BotBoard = board.simulate_move_and_rotation(move, player_id, next_rotation_states)
 					score = _minimax(temp_board, dynamic_depth, -INF, INF, false, player_id, chip_inventory, next_rotation_states)
@@ -105,10 +105,11 @@ func run() -> void:
 				if should_update:
 					best_score = score
 					if chip_type == Globals.ChipType.PACMAN:
-						var directions: Array = ["right", "down", "left"]
 						best_move = BotMove.new(chip_type, base_move.column, directions[best_dir_idx])
 					else:
 						best_move = BotMove.new(chip_type, base_move.column)
+
+	print("*** Best score: " + str(best_score))
 
 	call_deferred("emit_signal", "bot_worker_finished", best_move)
 
@@ -323,7 +324,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 				for base_move: BotMove in valid_moves:
 					var eval: float
 					if [Globals.ChipType.PACMAN].has(chip_type):
-						# Chip with special power
+						# Simulate moves for every useful direction
 						var best_dir_score: float = -INF
 						var directions: Array = ["right", "down", "left"]
 						for direction: String in directions:
@@ -338,7 +339,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 								best_dir_score = eval_dir
 						eval = best_dir_score
 					else:
-						# Regular chip
+						# Simulate move
 						var move := BotMove.new(chip_type, base_move.column)
 						# Use only the current rotation state for this move
 						var temp_rotation_states: Array = [current_rotation]
@@ -353,11 +354,11 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 						break
 				if search_was_cutoff:
 					break
-
 		# Only cache if we evaluated all moves, search wasn't cut off, and we're not time-pressured
 		if evaluated_all_moves and not search_was_cutoff and not is_time_pressured:
 			transposition_table[hash_key] = max_eval
 		return max_eval
+
 	else:
 		# Minimizing
 		var min_eval: float = INF
@@ -370,7 +371,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 				for base_move: BotMove in valid_moves:
 					var eval: float
 					if [Globals.ChipType.PACMAN].has(chip_type):
-						# Chip with special power
+						# Simulate moves for every useful direction
 						var best_dir_score: float = INF
 						var directions: Array = ["right", "down", "left"]
 						for direction: String in directions:
@@ -385,7 +386,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 								best_dir_score = eval_dir
 						eval = best_dir_score
 					else:
-						# Regular chip
+						# Simulate move
 						var move := BotMove.new(chip_type, base_move.column)
 						# Use only the current rotation state for this move
 						var temp_rotation_states: Array = [current_rotation]
@@ -400,7 +401,6 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 						break
 				if search_was_cutoff:
 					break
-
 		# Only cache if we evaluated all moves, search wasn't cut off, and we're not time-pressured
 		if evaluated_all_moves and not search_was_cutoff and not is_time_pressured:
 			transposition_table[hash_key] = min_eval

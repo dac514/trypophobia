@@ -271,6 +271,7 @@ func has_winning_line(player_id: int) -> bool:
 func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 	# Base score on current snapshot
 	var base_score := _score_board_array(current_board_permutation, player_id)
+	var openent_id := 3 - player_id
 
 	# Bomb/Pacman delta: discourage self-damage
 	if last_action_meta.has("move_type"):
@@ -282,7 +283,7 @@ func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 		# Rule for pacman: penalty for eating nothing, or eating self
 		if last_action_meta.get("move_type", "") == "pacman":
 			if destroyed_opp == 0 or destroyed_self >= 2:
-				base_score -= 300.0
+				base_score -= 1000.0
 
 		# Rule for bombs: only good if we destroy at least 2 more than we lose
 		if last_action_meta.get("move_type", "") == "bomb":
@@ -291,10 +292,6 @@ func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 				# Strong penalty to avoid non-emergency bombs
 				var shortfall := (destroyed_self + 2) - destroyed_opp
 				base_score -= 300.0 + float(shortfall) * 100.0
-			# If the bomb leaves an immediate opponent win, punish heavily
-			var opp_id := 3 - player_id
-			if _opponent_can_win_in_one(current_board_permutation, opp_id):
-				base_score -= 500.0
 
 	# Rotation projections over up to next 3 known rotations
 	var r_weights := [0.7, 0.2, 0.1]
@@ -308,8 +305,7 @@ func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 	# Threat stress: if opponent has a one-move win after the very next rotation
 	if rotation_states.size() > 0:
 		var after_r1 := _apply_rotation_to_array(current_board_permutation, rotation_states[0])
-		var opp_id := 3 - player_id
-		if _opponent_can_win_in_one(after_r1, opp_id):
+		if _opponent_can_win_in_one(after_r1, openent_id):
 			base_score -= 600.0
 
 	# Blend scores; if no projections, just base
@@ -343,6 +339,7 @@ func _find_drop_row(current_board: Array, column: int) -> int:
 	return -1
 
 
+# NOTE: current_board, passed by referece, wlll be mutated
 func _apply_bomb_effect(current_board: Array, col: int, row: int) -> void:
 	# Remove adjacent chips
 	for dx: int in [-1, 0, 1]:
@@ -355,6 +352,7 @@ func _apply_bomb_effect(current_board: Array, col: int, row: int) -> void:
 	current_board[col][row] = 0
 
 
+# NOTE: current_board, passed by referece, will be mutated
 func _apply_pacman_effect(current_board: Array, col: int, row: int, direction: Vector2i) -> void:
 	var tx: int = col + direction.x
 	var ty: int = row + direction.y
@@ -478,19 +476,20 @@ func _apply_rotation_to_array(board_arr: Array, rotation_state: Dictionary) -> A
 	elif degrees == 180:
 		return _rotate_grid_180(board_arr)
 	else:
-		return board_arr.duplicate(true)
+		return _apply_gravity(board_arr)
 
 
 func _opponent_can_win_in_one(board_arr: Array, opponent_id: int) -> bool:
+	var local_board_arr := board_arr.duplicate(true)
 	for col in range(GRID_SIZE.x):
-		if board_arr[col][0] != 0:
+		if local_board_arr[col][0] != 0:
 			continue
-		var drop_row := _find_drop_row(board_arr, col)
+		var drop_row := _find_drop_row(local_board_arr, col)
 		if drop_row == -1:
 			continue
-		board_arr[col][drop_row] = opponent_id
-		var wins := _check_for_win_on(board_arr, col, drop_row)
-		board_arr[col][drop_row] = 0
+		local_board_arr[col][drop_row] = opponent_id
+		var wins := _check_for_win_on(local_board_arr, col, drop_row)
+		local_board_arr[col][drop_row] = 0
 		if wins:
 			return true
 	return false
