@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dric8f1ihaghj"
-path="res://.godot/imported/rotate-180.webp-a27434f7531b4d8d9363703a9287448c.ctex"
+uid="uid://gu6q1ovx02c"
+path="res://.godot/imported/rotate-180.png-8d9a3954982e5256da5dfb5b43986478.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/rotate-180.webp"
-dest_files=["res://.godot/imported/rotate-180.webp-a27434f7531b4d8d9363703a9287448c.ctex"]
+source_file="res://assets/rotate-180.png"
+dest_files=["res://.godot/imported/rotate-180.png-8d9a3954982e5256da5dfb5b43986478.ctex"]
 
 [params]
 

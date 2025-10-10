@@ -1,8 +1,8 @@
 class_name NextMoves extends HBoxContainer
 
 const TEX_ROTATE_0 := preload("res://assets/rotate-0.png")
-const TEX_ROTATE_90 := preload("res://assets/rotate-90.webp")
-const TEX_ROTATE_180 := preload("res://assets/rotate-180.webp")
+const TEX_ROTATE_90 := preload("res://assets/rotate-90.png")
+const TEX_ROTATE_180 := preload("res://assets/rotate-180.png")
 const TEX_ROTATE_HINT := preload("res://scenes/degrees_hint.tscn")
 
 const SLIDE_DISTANCE := 212.0

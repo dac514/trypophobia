@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://3qigo43ka1i4"]
 
 [ext_resource type="Script" uid="uid://cukn8xotwdg5v" path="res://scenes/next_moves.gd" id="1_du14x"]
-[ext_resource type="Texture2D" uid="uid://dric8f1ihaghj" path="res://assets/rotate-180.webp" id="2_du14x"]
-[ext_resource type="Texture2D" uid="uid://bsrsogbyf4qrm" path="res://assets/rotate-90.webp" id="3_ipqwr"]
+[ext_resource type="Texture2D" uid="uid://gu6q1ovx02c" path="res://assets/rotate-180.png" id="2_du14x"]
+[ext_resource type="Texture2D" uid="uid://co7hthguyjm62" path="res://assets/rotate-90.png" id="3_ipqwr"]
 [ext_resource type="Texture2D" uid="uid://cqjyt17iwsee8" path="res://assets/rotate-0.png" id="4_bik7p"]
 
 [node name="NextMoves" type="HBoxContainer"]
