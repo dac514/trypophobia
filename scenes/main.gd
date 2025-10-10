@@ -132,6 +132,7 @@ func start_new_game() -> void:
 		current_chip.queue_free()
 	current_chip = null
 	board.clear_chips()
+	next_moves.is_first_rotation = true
 	# Reset players
 	current_player_id = 2
 	current_turn = 0

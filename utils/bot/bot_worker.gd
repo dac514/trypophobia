@@ -1,13 +1,17 @@
-class_name BotWorker
-extends Thread
+class_name BotWorker extends Thread
+
+## The BotWorker class uses the minimax algorithm with alpha-beta pruning to calculate the optimal move
+## for the AI player.
+##
+## It evaluates moves based on the current board state, chip inventory, and upcoming rotations, with
+## support for special chips like BOMB and PACMAN. The class runs in a thread asynchronously, leveraging
+## a transposition table for caching, and emits the best move once the computation is complete.
 
 @warning_ignore('UNUSED_SIGNAL')
 signal bot_worker_finished(best_move: BotMove)
 
 ## Maximum search depth for minimax algorithm
-const MAX_DEPTH = 5
-## Large value for minimax initialization
-const INF = 1e9
+const MAX_DEPTH = 8
 ## Maximum thinking time in seconds
 const MAX_THINKING_TIME = 5.0
 
@@ -37,8 +41,9 @@ func run() -> void:
 	var best_move: BotMove
 	var best_score: float = -INF
 	var chip_types: Array = [Globals.ChipType.EYE, Globals.ChipType.BOMB, Globals.ChipType.PACMAN]
-	var board := BotBoard.new(grid_state)
-	var valid_moves: Array = board.get_valid_moves()
+	var board := BotBoard.new()
+	board.setup(grid_state)
+	var valid_moves: Array = board.get_valid_drop_moves()
 
 	# Default to left column on empty board
 	if board.chip_count == 0:
@@ -64,6 +69,7 @@ func run() -> void:
 
 	start_time = Time.get_ticks_msec()
 	var dynamic_depth := MAX_DEPTH
+	var directions: Array = ["right", "down", "left"]
 	for chip_type: int in chip_types:
 		var player_inventory: Dictionary = chip_inventory.get(player_id, {}) as Dictionary
 		var available_count: int = player_inventory.get(chip_type, 0) as int
@@ -72,9 +78,8 @@ func run() -> void:
 				var score: float
 				var best_dir_idx: int = 0
 				if [Globals.ChipType.PACMAN].has(chip_type):
-					# Chip with special power
+					# Simulate moves for every useful direction
 					var best_dir_score: float = -INF
-					var directions: Array = ["right", "down", "left"]
 					for dir_idx: int in range(directions.size()):
 						var direction: String = directions[dir_idx]
 						var move := BotMove.new(chip_type, base_move.column, direction)
@@ -85,7 +90,7 @@ func run() -> void:
 							best_dir_idx = dir_idx
 					score = best_dir_score
 				else:
-					# Regular chip
+					# Similuate move
 					var move := BotMove.new(chip_type, base_move.column)
 					var temp_board: BotBoard = board.simulate_move_and_rotation(move, player_id, next_rotation_states)
 					score = _minimax(temp_board, dynamic_depth, -INF, INF, false, player_id, chip_inventory, next_rotation_states)
@@ -100,10 +105,11 @@ func run() -> void:
 				if should_update:
 					best_score = score
 					if chip_type == Globals.ChipType.PACMAN:
-						var directions: Array = ["right", "down", "left"]
 						best_move = BotMove.new(chip_type, base_move.column, directions[best_dir_idx])
 					else:
 						best_move = BotMove.new(chip_type, base_move.column)
+
+	print("Best score: " + str(best_score))
 
 	call_deferred("emit_signal", "bot_worker_finished", best_move)
 
@@ -114,7 +120,7 @@ func _check_win(board: BotBoard, current_player_id: int, current_chip_inventory:
 	for chip_type: int in [Globals.ChipType.EYE]:
 		var available_count: int = player_inventory.get(chip_type, 0) as int
 		if available_count > 0:
-			for base_move: BotMove in board.get_valid_moves():
+			for base_move: BotMove in board.get_valid_drop_moves():
 				var move := BotMove.new(chip_type, base_move.column)
 				var temp_board: BotBoard = board.simulate_move_and_rotation(move, current_player_id, rotation_states)
 				if temp_board.has_winning_line(current_player_id):
@@ -129,7 +135,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 	var opponent_id: int = 3 - current_player_id
 	var rotation_states_1 := [rotation_states[0]]
 	var rotation_states_2 := [rotation_states[1]]
-	var board_valid_moves := board.get_valid_moves()
+	var board_valid_moves := board.get_valid_drop_moves()
 	var safe_moves: Array[BotMove] = []
 	var opponent_can_win_somewhere := false
 
@@ -140,13 +146,14 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 
 		# Check if opponent can win after this move
 		var opponent_can_win_after_this_move := false
-		var opp_valid_moves: Array = temp_board.get_valid_moves()
+		var opp_valid_moves: Array = temp_board.get_valid_drop_moves()
 
 		for opp_base_move: BotMove in opp_valid_moves:
 			var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
 			var opp_temp_board: BotBoard = temp_board.simulate_move_and_rotation(opp_move, opponent_id, rotation_states_2)
 			if opp_temp_board.has_winning_line(opponent_id):
 				print("Opponent has winning line after move column %d" % move.column)
+				# opp_temp_board.print_ascii_grid()
 				opponent_can_win_after_this_move = true
 				opponent_can_win_somewhere = true
 				break
@@ -182,7 +189,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 					for blocking_move: BotMove in blocking_moves:
 						var blocking_board := board.simulate_move_and_rotation(blocking_move, current_player_id, rotation_states_1)
 						var still_can_win := false
-						var valid_moves_after_block := blocking_board.get_valid_moves()
+						var valid_moves_after_block := blocking_board.get_valid_drop_moves()
 
 						for opp_base_move: BotMove in valid_moves_after_block:
 							var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
@@ -238,7 +245,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 		for base_move: BotMove in board_valid_moves:
 			var move := BotMove.new(Globals.ChipType.EYE, base_move.column)
 			var temp_board: BotBoard = board.simulate_move_and_rotation(move, current_player_id, rotation_states_1)
-			var opp_valid_moves: Array = temp_board.get_valid_moves()
+			var opp_valid_moves: Array = temp_board.get_valid_drop_moves()
 			var opp_win_count := 0
 			for opp_base_move: BotMove in opp_valid_moves:
 				var opp_move := BotMove.new(Globals.ChipType.EYE, opp_base_move.column)
@@ -262,7 +269,7 @@ func _check_block(board: BotBoard, current_player_id: int, current_chip_inventor
 ## Minimax algorithm with alpha-beta pruning for optimal move evaluation
 func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing: bool, current_player_id: int, current_chip_inventory: Dictionary, rotation_states: Array) -> float:
 	# Create a unique key for this board state
-	var hash_key := _hash_board_state(board, depth, maximizing, current_player_id, rotation_states, current_chip_inventory)
+	var hash_key := _hash_board_state(board, depth, maximizing, current_player_id, current_chip_inventory, rotation_states)
 
 	# Check if we've already evaluated this position
 	if transposition_table.has(hash_key):
@@ -293,7 +300,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 			transposition_table[hash_key] = eval
 			return eval
 
-	var valid_moves: Array = board.get_valid_moves()
+	var valid_moves: Array = board.get_valid_drop_moves()
 	var chip_types: Array = [Globals.ChipType.EYE, Globals.ChipType.BOMB, Globals.ChipType.PACMAN]
 
 	# Only limit moves if there are too many (board-size relative)
@@ -317,7 +324,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 				for base_move: BotMove in valid_moves:
 					var eval: float
 					if [Globals.ChipType.PACMAN].has(chip_type):
-						# Chip with special power
+						# Simulate moves for every useful direction
 						var best_dir_score: float = -INF
 						var directions: Array = ["right", "down", "left"]
 						for direction: String in directions:
@@ -332,7 +339,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 								best_dir_score = eval_dir
 						eval = best_dir_score
 					else:
-						# Regular chip
+						# Simulate move
 						var move := BotMove.new(chip_type, base_move.column)
 						# Use only the current rotation state for this move
 						var temp_rotation_states: Array = [current_rotation]
@@ -347,11 +354,11 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 						break
 				if search_was_cutoff:
 					break
-
 		# Only cache if we evaluated all moves, search wasn't cut off, and we're not time-pressured
 		if evaluated_all_moves and not search_was_cutoff and not is_time_pressured:
 			transposition_table[hash_key] = max_eval
 		return max_eval
+
 	else:
 		# Minimizing
 		var min_eval: float = INF
@@ -364,7 +371,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 				for base_move: BotMove in valid_moves:
 					var eval: float
 					if [Globals.ChipType.PACMAN].has(chip_type):
-						# Chip with special power
+						# Simulate moves for every useful direction
 						var best_dir_score: float = INF
 						var directions: Array = ["right", "down", "left"]
 						for direction: String in directions:
@@ -379,7 +386,7 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 								best_dir_score = eval_dir
 						eval = best_dir_score
 					else:
-						# Regular chip
+						# Simulate move
 						var move := BotMove.new(chip_type, base_move.column)
 						# Use only the current rotation state for this move
 						var temp_rotation_states: Array = [current_rotation]
@@ -394,7 +401,6 @@ func _minimax(board: BotBoard, depth: int, alpha: float, beta: float, maximizing
 						break
 				if search_was_cutoff:
 					break
-
 		# Only cache if we evaluated all moves, search wasn't cut off, and we're not time-pressured
 		if evaluated_all_moves and not search_was_cutoff and not is_time_pressured:
 			transposition_table[hash_key] = min_eval
@@ -417,7 +423,7 @@ func _simulate_inventory(inventory: Dictionary, target_player_id: int, chip_type
 
 
 ## Generate hash key for board state
-func _hash_board_state(board: BotBoard, depth: int, maximizing: bool, current_player_id: int, rotation_states: Array, current_chip_inventory: Dictionary) -> int:
+func _hash_board_state(board: BotBoard, depth: int, maximizing: bool, current_player_id: int, current_chip_inventory: Dictionary, rotation_states: Array) -> int:
 	var hash_value: int = 0
 	var multiplier: int = 31
 

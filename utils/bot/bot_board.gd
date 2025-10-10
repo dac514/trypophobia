@@ -1,5 +1,11 @@
-class_name BotBoard
-extends RefCounted
+class_name BotBoard extends RefCounted
+
+## The BotBoard class simulates and evaluates game states for the AI bot.
+##
+## It represents the board as a grid of player IDs and provides methods for duplication, chip counting,
+## move validation, rotation, and win detection. By simplifying the board to a grid of integers, avoiding
+## full game objects or physics, it reduces computational overhead, enabling efficient and isolated evaluations
+## for AI decision-making.
 
 const GRID_SIZE: Vector2i = Board.GRID_SIZE
 
@@ -9,31 +15,14 @@ var last_action_meta: Dictionary = {}
 
 
 ## Creates a new BotBoard grid with PlayerIDs from a grid of Chip objects
-func _init(grid_state: Array) -> void:
+func setup(grid_state: Array) -> void:
 	chip_count = _count_placed_chips(grid_state)
 	current_board_permutation = _convert_grid_of_chips_to_player_ids(grid_state)
 
 
-## Helper to count chips in an integer grid
-func _count_chips_in_integer_grid(grid: Array) -> int:
-	var count: int = 0
-	for col in range(GRID_SIZE.x):
-		for row in range(GRID_SIZE.y):
-			if grid[col][row] != 0:
-				count += 1
-	return count
-
-
 ## Creates a copy of this BotBoard with the same state
 func duplicate() -> BotBoard:
-	var original_grid: Array = []
-	for col in range(GRID_SIZE.x):
-		var column: Array = []
-		for row in range(GRID_SIZE.y):
-			column.append(null)
-		original_grid.append(column)
-
-	var new_board := BotBoard.new(original_grid)
+	var new_board := BotBoard.new()
 	new_board.chip_count = chip_count
 	new_board.current_board_permutation = current_board_permutation.duplicate(true)
 	new_board.last_action_meta = last_action_meta.duplicate(true)
@@ -41,8 +30,10 @@ func duplicate() -> BotBoard:
 
 
 ## Gets all valid column moves for current board state
-func get_valid_moves() -> Array:
-	var moves: Array = []
+## Returns one placeholder per open column using EYE as a neutral default
+## May override chip_type & direction when expanding actual actions
+func get_valid_drop_moves() -> Array[BotMove]:
+	var moves: Array[BotMove] = []
 	for col in range(GRID_SIZE.x):
 		# Check if the top row of this column is empty (can drop chip)
 		if current_board_permutation[col][0] == 0:
@@ -53,7 +44,7 @@ func get_valid_moves() -> Array:
 
 
 ## Sets rotated board as current permutation
-func simulate_rotation(rotation_state: Dictionary) -> void:
+func simulate_rotation(rotation_state: Dictionary, move: BotMove) -> void:
 	var direction: int = rotation_state.get("direction", 0)
 	var degrees: int = rotation_state.get("degrees", 0)
 	# Apply rotation transformation (cached)
@@ -65,7 +56,8 @@ func simulate_rotation(rotation_state: Dictionary) -> void:
 	elif degrees == 180:
 		current_board_permutation = _rotate_grid_180(current_board_permutation)
 	else:
-		return
+		if move.chip_type != Globals.ChipType.EYE:
+			current_board_permutation = _apply_gravity(current_board_permutation)
 
 
 func check_for_win(column: int, row: int) -> bool:
@@ -121,7 +113,7 @@ func _rotate_grid_left_90(current_board: Array) -> Array:
 
 	for col in range(GRID_SIZE.x):
 		for row in range(GRID_SIZE.y):
-			# Right 90°: (col,row) -> (row, GRID_SIZE.y-1-col)
+			# Left 90° (CCW): (col,row) -> (row, GRID_SIZE.y-1-col)
 			var new_col: int = row
 			var new_row: int = GRID_SIZE.y - 1 - col
 			if new_col < GRID_SIZE.x and new_row < GRID_SIZE.y:
@@ -141,7 +133,7 @@ func _rotate_grid_right_90(current_board: Array) -> Array:
 
 	for col in range(GRID_SIZE.x):
 		for row in range(GRID_SIZE.y):
-			# Left 90°: (col,row) -> (GRID_SIZE.x-1-row, col)
+			# Right 90° (CW): (col,row) -> (GRID_SIZE.x-1-row, col)
 			var new_col: int = GRID_SIZE.x - 1 - row
 			var new_row: int = col
 			if new_col < GRID_SIZE.x and new_row < GRID_SIZE.y:
@@ -213,7 +205,7 @@ func simulate_move_and_rotation(move: BotMove, player_id: int, next_rotation_sta
 	# Apply rotation if available
 	if next_rotation_states.size() > 0:
 		var rotation_state: Dictionary = next_rotation_states[0]
-		new_board.simulate_rotation(rotation_state)
+		new_board.simulate_rotation(rotation_state, move)
 
 	return new_board
 
@@ -250,12 +242,6 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 	elif move.chip_type == Globals.ChipType.PACMAN:
 		var before_counts := _count_pieces_by_player(current_board)
 		var direction := _get_pacman_direction(move.direction)
-		# Determine if the adjacent chip belongs to self before applying effect
-		var tx := move.column + direction.x
-		var ty := drop_row + direction.y
-		var ate_own_adjacent := false
-		if tx >= 0 and tx < GRID_SIZE.x and ty >= 0 and ty < GRID_SIZE.y:
-			ate_own_adjacent = current_board[tx][ty] == player_id
 		_apply_pacman_effect(current_board, move.column, drop_row, direction)
 		var after_counts := _count_pieces_by_player(current_board)
 		var self_id := player_id
@@ -266,7 +252,6 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 			"move_type": "pacman",
 			"destroyed_self": destroyed_self,
 			"destroyed_opp": destroyed_opp,
-			"ate_own_adjacent": ate_own_adjacent,
 		}
 
 	return new_board
@@ -286,6 +271,7 @@ func has_winning_line(player_id: int) -> bool:
 func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 	# Base score on current snapshot
 	var base_score := _score_board_array(current_board_permutation, player_id)
+	var openent_id := 3 - player_id
 
 	# Bomb/Pacman delta: discourage self-damage
 	if last_action_meta.has("move_type"):
@@ -294,9 +280,10 @@ func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 		# Weights tuned conservatively
 		base_score += 3.0 * destroyed_opp - 3.5 * destroyed_self
 
-		# Penalize pacman eating own adjacent chip explicitly
-		if last_action_meta.get("move_type", "") == "pacman" and bool(last_action_meta.get("ate_own_adjacent", false)):
-			base_score -= 300.0
+		# Rule for pacman: penalty for eating nothing, or eating self
+		if last_action_meta.get("move_type", "") == "pacman":
+			if destroyed_opp == 0 or destroyed_self >= 2:
+				base_score -= 1000.0
 
 		# Rule for bombs: only good if we destroy at least 2 more than we lose
 		if last_action_meta.get("move_type", "") == "bomb":
@@ -305,10 +292,6 @@ func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 				# Strong penalty to avoid non-emergency bombs
 				var shortfall := (destroyed_self + 2) - destroyed_opp
 				base_score -= 300.0 + float(shortfall) * 100.0
-			# If the bomb leaves an immediate opponent win, punish heavily
-			var opp_id := 3 - player_id
-			if _opponent_can_win_in_one(current_board_permutation, opp_id):
-				base_score -= 500.0
 
 	# Rotation projections over up to next 3 known rotations
 	var r_weights := [0.7, 0.2, 0.1]
@@ -322,8 +305,7 @@ func evaluate_position(player_id: int, rotation_states: Array = []) -> float:
 	# Threat stress: if opponent has a one-move win after the very next rotation
 	if rotation_states.size() > 0:
 		var after_r1 := _apply_rotation_to_array(current_board_permutation, rotation_states[0])
-		var opp_id := 3 - player_id
-		if _opponent_can_win_in_one(after_r1, opp_id):
+		if _opponent_can_win_in_one(after_r1, openent_id):
 			base_score -= 600.0
 
 	# Blend scores; if no projections, just base
@@ -357,6 +339,7 @@ func _find_drop_row(current_board: Array, column: int) -> int:
 	return -1
 
 
+# NOTE: current_board, passed by referece, wlll be mutated
 func _apply_bomb_effect(current_board: Array, col: int, row: int) -> void:
 	# Remove adjacent chips
 	for dx: int in [-1, 0, 1]:
@@ -369,6 +352,7 @@ func _apply_bomb_effect(current_board: Array, col: int, row: int) -> void:
 	current_board[col][row] = 0
 
 
+# NOTE: current_board, passed by referece, will be mutated
 func _apply_pacman_effect(current_board: Array, col: int, row: int, direction: Vector2i) -> void:
 	var tx: int = col + direction.x
 	var ty: int = row + direction.y
@@ -492,19 +476,20 @@ func _apply_rotation_to_array(board_arr: Array, rotation_state: Dictionary) -> A
 	elif degrees == 180:
 		return _rotate_grid_180(board_arr)
 	else:
-		return board_arr.duplicate(true)
+		return _apply_gravity(board_arr)
 
 
 func _opponent_can_win_in_one(board_arr: Array, opponent_id: int) -> bool:
+	var local_board_arr := board_arr.duplicate(true)
 	for col in range(GRID_SIZE.x):
-		if board_arr[col][0] != 0:
+		if local_board_arr[col][0] != 0:
 			continue
-		var drop_row := _find_drop_row(board_arr, col)
+		var drop_row := _find_drop_row(local_board_arr, col)
 		if drop_row == -1:
 			continue
-		board_arr[col][drop_row] = opponent_id
-		var wins := _check_for_win_on(board_arr, col, drop_row)
-		board_arr[col][drop_row] = 0
+		local_board_arr[col][drop_row] = opponent_id
+		var wins := _check_for_win_on(local_board_arr, col, drop_row)
+		local_board_arr[col][drop_row] = 0
 		if wins:
 			return true
 	return false
