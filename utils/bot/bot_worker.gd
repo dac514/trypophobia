@@ -18,15 +18,17 @@ const MAX_THINKING_TIME = 5.0
 var chip_inventory: Dictionary
 var grid_state: Array
 var next_rotation_states: Array
+var is_bot_dumb: bool = false
 var player_id: int
 var start_time: int
 var transposition_table: Dictionary = {}
 
-func _init(gs: Array, p: int, ci: Dictionary, nrs: Array) -> void:
+func _init(gs: Array, p: int, ci: Dictionary, nrs: Array, isb: bool) -> void:
 	grid_state = gs
 	player_id = p
 	chip_inventory = ci
 	next_rotation_states = nrs
+	is_bot_dumb = isb
 
 
 # Run the minimax search (CPU heavy, use a thread)
@@ -43,7 +45,6 @@ func run() -> void:
 	var chip_types: Array = [Globals.ChipType.EYE, Globals.ChipType.BOMB, Globals.ChipType.PACMAN]
 	var board := BotBoard.new()
 	board.setup(grid_state)
-	var valid_moves: Array = board.get_valid_drop_moves()
 
 	# Default to left column on empty board
 	if board.chip_count == 0:
@@ -57,16 +58,33 @@ func run() -> void:
 	elif board.chip_count < 10:
 		chip_types = [Globals.ChipType.EYE, Globals.ChipType.PACMAN]
 
-	# Checks for immediate winning moves or necessary blocks before minimax search
-	var immediate_move: BotMove = _check_win(board, player_id, chip_inventory, next_rotation_states)
-	if immediate_move != null:
-		call_deferred("emit_signal", "bot_worker_finished", immediate_move)
-		return
-	immediate_move = _check_block(board, player_id, chip_inventory, next_rotation_states)
-	if immediate_move != null:
-		call_deferred("emit_signal", "bot_worker_finished", immediate_move)
+	# Checks for immediate winning moves
+	var should_check_win: bool = not is_bot_dumb
+	if should_check_win:
+		var immediate_win: BotMove = _check_win(board, player_id, chip_inventory, next_rotation_states)
+		if immediate_win != null:
+			call_deferred("emit_signal", "bot_worker_finished", immediate_win)
+			return
+
+	# Check for blocking moves
+	var should_check_block: bool = not is_bot_dumb or (randi() % 2 == 0)  # Hard bot always checks, dumb bot has 1/2 chance
+	if should_check_block:
+		var immediate_block: BotMove = _check_block(board, player_id, chip_inventory, next_rotation_states)
+		if immediate_block != null:
+			call_deferred("emit_signal", "bot_worker_finished", immediate_block)
+			return
+
+	var valid_moves: Array = board.get_valid_drop_moves()
+
+	# Easy mode, select random move
+	if is_bot_dumb:
+		print("Easy mode, random move")
+		var random_move: BotMove = valid_moves[randi() % valid_moves.size()]
+		best_move = BotMove.new(Globals.ChipType.EYE, random_move.column)
+		call_deferred("emit_signal", "bot_worker_finished", best_move)
 		return
 
+	# Hard mode, minimax search
 	start_time = Time.get_ticks_msec()
 	var dynamic_depth := MAX_DEPTH
 	var directions: Array = ["right", "down", "left"]
@@ -109,7 +127,7 @@ func run() -> void:
 					else:
 						best_move = BotMove.new(chip_type, base_move.column)
 
-	print("Best score: " + str(best_score))
+	print("Hard mode, minimax best score: " + str(best_score))
 
 	call_deferred("emit_signal", "bot_worker_finished", best_move)
 

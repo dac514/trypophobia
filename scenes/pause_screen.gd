@@ -12,6 +12,7 @@ extends Control
 @onready var resume_button: Button = %ResumeButton
 @onready var ui_panel_container: PanelContainer = $UIPanelContainer
 @onready var v_box_container: VBoxContainer = $UIPanelContainer/VBoxContainer
+@onready var settings_button: OptionButton = %SettingsButton
 
 
 ## Controls how much the menu is opened. This isn't actually used in the running game
@@ -23,6 +24,7 @@ extends Control
 @export_range(0.1, 10.0, 0.01, "or_greater") var animation_duration := 2.3
 
 var game_in_progress := false
+var is_bot_dumb: bool = false
 var _tween: Tween
 var _is_currently_opening := false
 
@@ -34,6 +36,7 @@ func _ready() -> void:
 	quit_button.pressed.connect(get_tree().quit)
 	info_button.pressed.connect(show_info)
 	resume_button.pressed.connect(func() -> void: toggle())
+	settings_button.item_selected.connect(_on_settings_button_item_selected)
 	info_label.meta_clicked.connect(_on_meta_clicked)
 	menu_opened_amount = 0.0
 	info_container.visible = false
@@ -110,3 +113,7 @@ func _on_meta_clicked(meta: Variant) -> void:
 		hide_info()
 	elif typeof(meta) == TYPE_STRING and (meta as String).begins_with("https"):
 		OS.shell_open(meta)
+
+
+func _on_settings_button_item_selected(index: int) -> void:
+	is_bot_dumb = settings_button.get_item_id(index) == 1

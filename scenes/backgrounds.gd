@@ -19,5 +19,9 @@ func _ready() -> void:
 		shader_material.set_shader_parameter("quality", mobile_quality)
 		shader_material.set_shader_parameter("resolution", Vector2(250, 150))
 	else:
-		# Full quality for desktop
-		shader_material.set_shader_parameter("quality", 1.0)
+		# High quality for desktop
+		var desktop_quality := 1.0
+		if OS.get_processor_count() <= 4:
+			desktop_quality = 0.9
+
+		shader_material.set_shader_parameter("quality", desktop_quality)

@@ -20,7 +20,7 @@ content_margin_left = 20.0
 content_margin_top = 10.0
 content_margin_right = 20.0
 content_margin_bottom = 10.0
-bg_color = Color(0.5803922, 0.23137255, 0.3764706, 1)
+bg_color = Color(0.60784316, 0.26666668, 0.73333335, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
@@ -53,7 +53,7 @@ content_margin_left = 20.0
 content_margin_top = 10.0
 content_margin_right = 20.0
 content_margin_bottom = 10.0
-bg_color = Color(0.5803922, 0.23137255, 0.3764706, 1)
+bg_color = Color(0.60784316, 0.26666668, 0.73333335, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
@@ -64,7 +64,7 @@ content_margin_left = 20.0
 content_margin_top = 20.0
 content_margin_right = 20.0
 content_margin_bottom = 20.0
-bg_color = Color(0, 0, 0, 0.88235295)
+bg_color = Color(0, 0, 0, 0.49803922)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
@@ -79,7 +79,10 @@ Button/styles/focus = SubResource("StyleBoxFlat_ya4ey")
 Button/styles/hover = SubResource("StyleBoxFlat_85g3d")
 Button/styles/normal = SubResource("StyleBoxFlat_o6xl0")
 Button/styles/pressed = SubResource("StyleBoxFlat_choun")
+HSeparator/constants/separation = 8
+OptionButton/font_sizes/font_size = 42
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_tipki")
+PopupMenu/font_sizes/font_size = 32
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_27awe"]
 shader = ExtResource("3_hr2n2")
@@ -132,9 +135,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -187.0
-offset_top = -152.5
+offset_top = -282.0
 offset_right = 187.0
-offset_bottom = 296.5
+offset_bottom = 282.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_hr2n2")
@@ -172,10 +175,27 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Pass & Play"
 
+[node name="HR1" type="HSeparator" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+layout_mode = 2
+
 [node name="InfoButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Info"
+text = "Tutorial"
+
+[node name="SettingsButton" type="OptionButton" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+selected = 0
+item_count = 2
+popup/item_0/text = "Hard Mode"
+popup/item_0/id = 0
+popup/item_1/text = "Easy Mode"
+popup/item_1/id = 1
+
+[node name="HR2" type="HSeparator" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+layout_mode = 2
 
 [node name="QuitButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
