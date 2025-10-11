@@ -8,7 +8,7 @@ static var game_info := """
 
 👁️ Get four eyeballs in a row to win.
 
-Wins are only counted after the rotation finishes. The board rotates randomly after each turn. The next 3 rotations are shown in the upper left corner.
+Wins are only counted after the rotation finishes. The board rotates randomly. The next 3 rotations are shown in the upper left.
 
 Press T to toggle special chips.
 
@@ -20,7 +20,7 @@ Choose "Play Bot" to play against the AI. Choose "Pass & Play" to play against a
 
 When it's your turn, click the column where you want to drop your eyeball.
 
-Credits:
+[b]Credits:[/b]
 
 Game by Dac Chartrand
 Art by [url=https://www.deviantart.com/dackcode]dackcode[/url]
