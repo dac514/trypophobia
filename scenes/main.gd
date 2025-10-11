@@ -210,9 +210,9 @@ func game_over(player_id: int) -> void:
 
 	var new_text: String
 	if player_id:
-		new_text = "GAME OVER\nThe winner is: " + (player1_name if player_id == 1 else player2_name)
+		new_text = "GAME OVER \nThe winner is: " + (player1_name if player_id == 1 else player2_name) + " \n"
 	else:
-		new_text = "GAME OVER\nIt's a tie!"
+		new_text = "GAME OVER \nIt's a tie! \n"
 
 	player_label.text = new_text
 	player_eye.player_id = 1 if player_id == 1 else 2
@@ -311,7 +311,7 @@ func make_bot_move() -> void:
 	# Calculate move
 	var bot := Bot.new()
 	add_child(bot)
-	bot.find_best_move(board.grid_state, current_player_id, chip_inventory, board.board_rotator.next_rotation_states)
+	bot.find_best_move(board.grid_state, current_player_id, chip_inventory, board.board_rotator.next_rotation_states, pause_screen.is_bot_dumb)
 	var move: BotMove = await bot.best_move
 	bot.worker.wait_to_finish()
 	bot.queue_free()
