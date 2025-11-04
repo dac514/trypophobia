@@ -145,5 +145,5 @@ func _animate_next_move(tex_rect: TextureRect, state: Dictionary) -> void:
 
 
 func stop_animation() -> void:
-	if rotation_preview_tween and rotation_preview_tween.is_valid():
+	if is_instance_valid(rotation_preview_tween):
 		rotation_preview_tween.kill()
