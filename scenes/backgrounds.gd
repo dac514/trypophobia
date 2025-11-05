@@ -13,7 +13,10 @@ func _ready() -> void:
 	):
 		# Lower quality for mobile
 		var mobile_quality := 0.3
-		if OS.get_processor_count() <= 4 or OS.get_processor_name().to_lower().contains("snapdragon"):
+		if (
+			OS.get_processor_count() <= 4
+			or OS.get_processor_name().to_lower().contains("snapdragon")
+		):
 			mobile_quality = 0.2
 
 		shader_material.set_shader_parameter("quality", mobile_quality)

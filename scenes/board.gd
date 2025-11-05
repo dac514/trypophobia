@@ -52,7 +52,9 @@ func find_nearest_pos(chip_to_check: Chip) -> Node2D:
 	var min_distance := INF
 
 	for pos_node in positions:
-		var distance: float = chip_to_check.global_position.distance_to((pos_node as Node2D).global_position)
+		var distance: float = chip_to_check.global_position.distance_to(
+			(pos_node as Node2D).global_position
+		)
 		if distance < min_distance:
 			min_distance = distance
 			nearest_pos = pos_node
@@ -81,37 +83,50 @@ func has_winning_line() -> bool:
 	var player_2_win: bool = false
 	for col in range(GRID_SIZE.x):
 		for row in range(GRID_SIZE.y):
-				if check_for_win(col, row) == 1:
-					player_1_win = true
-				elif check_for_win(col, row) == 2:
-					player_2_win = true
+			if check_for_win(col, row) == 1:
+				player_1_win = true
+			elif check_for_win(col, row) == 2:
+				player_2_win = true
 
-	if (player_1_win and player_2_win):
+	if player_1_win and player_2_win:
 		game_over.emit(0)
 		return true
-	if (player_1_win):
+	if player_1_win:
 		game_over.emit(1)
 		return true
-	if (player_2_win):
+	if player_2_win:
 		game_over.emit(2)
 		return true
 
 	return false
 
-## Returns the player ID of the winner if there's a winning line at the specified position, or -1 if none
+
+## Returns the player ID of the winner if there's a winning line at the specified position,
+## or -1 if none
 func check_for_win(column: int, row: int) -> int:
 	if grid_state[column][row] == null:
 		return -1
 
 	var player_id: int = grid_state[column][row].player_id
-	var directions: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)]
+	var directions: Array[Vector2i] = [
+		Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)
+	]
 
 	for direction in directions:
 		var chips_in_a_row := [grid_state[column][row]]
 		# Check one direction
-		chips_in_a_row.append_array(_get_line(column + direction.x, row + direction.y, direction, player_id))
+		chips_in_a_row.append_array(
+			_get_line(column + direction.x, row + direction.y, direction, player_id)
+		)
 		# Check the opposite direction
-		chips_in_a_row.append_array(_get_line(column - direction.x, row - direction.y, Vector2i(-direction.x, -direction.y), player_id))
+		chips_in_a_row.append_array(
+			_get_line(
+				column - direction.x,
+				row - direction.y,
+				Vector2i(-direction.x, -direction.y),
+				player_id
+			)
+		)
 		if chips_in_a_row.size() >= 4:
 			_highlight_winning_chips(chips_in_a_row)
 			# game_over.emit(player_id)
@@ -126,7 +141,9 @@ func _get_line(col: int, row: int, direction: Vector2i, player_id: int) -> Array
 	if col < 0 or col >= GRID_SIZE.x or row < 0 or row >= GRID_SIZE.y:
 		return line_chips
 
-	var current_chip: Chip = grid_state[col][row] if is_instance_valid(grid_state[col][row]) else null
+	var current_chip: Chip = (
+		grid_state[col][row] if is_instance_valid(grid_state[col][row]) else null
+	)
 	if current_chip and current_chip.player_id == player_id:
 		line_chips.append(current_chip)
 		line_chips.append_array(
@@ -145,7 +162,7 @@ func _highlight_winning_chips(chips: Array) -> void:
 
 # A debug function to print the grid state in ASCII format
 func _print_ascii_grid() -> void:
-	print("--- GRID STATE ---") # Divider before grid
+	print("--- GRID STATE ---")  # Divider before grid
 	for row in range(GRID_SIZE.y):
 		var line := ""
 		for col in range(GRID_SIZE.x):
@@ -155,4 +172,4 @@ func _print_ascii_grid() -> void:
 			else:
 				line += str(chip.player_id) + " "
 		print(line)
-	print("------------------") # Divider after grid
+	print("------------------")  # Divider after grid

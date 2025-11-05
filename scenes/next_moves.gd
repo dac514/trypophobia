@@ -33,7 +33,8 @@ func draw_next_moves(board: Board, is_bot: bool) -> void:
 	for child in get_children():
 		child.queue_free()
 
-	# Re-add children based on latest states, and duplicate the last child to animate it out for a smooth sliding effect
+	# Re-add children based on latest states, and duplicate the last child to
+	## animate it out for a smooth sliding effect
 	for i in range(next_rotation_states.size()):
 		var state: Dictionary = next_rotation_states[i]
 		var tex_rect := _set_texture(state)
@@ -56,19 +57,25 @@ func draw_next_moves(board: Board, is_bot: bool) -> void:
 	assembly_line_tween.set_parallel(true)
 	for child in get_children():
 		var tex_rect := child as TextureRect
-		assembly_line_tween.tween_property(tex_rect, "position:x", tex_rect.position.x + SLIDE_DISTANCE, 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
+		(
+			assembly_line_tween
+			. tween_property(tex_rect, "position:x", tex_rect.position.x + SLIDE_DISTANCE, 0.5)
+			. set_ease(Tween.EASE_IN_OUT)
+			. set_trans(Tween.TRANS_CUBIC)
+		)
 
 	# Clean up after animation
 	assembly_line_tween.set_parallel(false)
-	assembly_line_tween.tween_callback(func() -> void:
-		# Remove the rightmost child
-		last_child.queue_free()
-		# Wait a frame for layout to stabilize
-		await get_tree().process_frame
-		if not is_bot:
-			# Start hint animation on the new rightmost item
-			var rightmost := get_child(get_child_count() - 1) as TextureRect
-			_animate_next_move(rightmost, next_rotation_states[next_rotation_states.size() - 1])
+	assembly_line_tween.tween_callback(
+		func() -> void:
+			# Remove the rightmost child
+			last_child.queue_free()
+			# Wait a frame for layout to stabilize
+			await get_tree().process_frame
+			if not is_bot:
+				# Start hint animation on the new rightmost item
+				var rightmost := get_child(get_child_count() - 1) as TextureRect
+				_animate_next_move(rightmost, next_rotation_states[next_rotation_states.size() - 1])
 	)
 
 
@@ -92,7 +99,10 @@ func _set_texture(state: Dictionary) -> TextureRect:
 
 
 func _animate_next_move(tex_rect: TextureRect, state: Dictionary) -> void:
-	var is_not_a_rotation: bool = !(state.degrees == BoardRotator.RotationAmount.DEG_90 or state.degrees == BoardRotator.RotationAmount.DEG_180)
+	var is_not_a_rotation: bool = !(
+		state.degrees == BoardRotator.RotationAmount.DEG_90
+		or state.degrees == BoardRotator.RotationAmount.DEG_180
+	)
 
 	# Ensure any previous looping tween is stopped
 	stop_animation()
@@ -137,7 +147,9 @@ func _animate_next_move(tex_rect: TextureRect, state: Dictionary) -> void:
 					sub_tween.set_parallel(true)
 					sub_tween.tween_property(tex_rect, "rotation", target, 0.6 if is_90 else 0.9)
 					# Counter-rotate the hint to keep it upright
-					sub_tween.tween_property(hint, "rotation", hint.rotation - rotation_step, 0.6 if is_90 else 0.9)
+					sub_tween.tween_property(
+						hint, "rotation", hint.rotation - rotation_step, 0.6 if is_90 else 0.9
+					)
 		)
 		rotation_preview_tween.tween_interval(0.6 if is_90 else 0.9)
 
@@ -145,5 +157,5 @@ func _animate_next_move(tex_rect: TextureRect, state: Dictionary) -> void:
 
 
 func stop_animation() -> void:
-	if rotation_preview_tween and rotation_preview_tween.is_valid():
+	if is_instance_valid(rotation_preview_tween):
 		rotation_preview_tween.kill()
