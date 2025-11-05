@@ -1,4 +1,3 @@
-
 class_name ChipPacman
 extends Chip
 
@@ -38,8 +37,18 @@ func _eat_all(chips_to_eat: Array[ChipEye]) -> void:
 	# Pacman munching animation
 	var tween := self.create_tween()
 	tween.set_loops()
-	tween.tween_property(self, "scale", Vector2(1.2, 0.8), 0.09).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(self, "scale", Vector2(0.9, 1.2), 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	(
+		tween
+		. tween_property(self, "scale", Vector2(1.2, 0.8), 0.09)
+		. set_trans(Tween.TRANS_SINE)
+		. set_ease(Tween.EASE_IN_OUT)
+	)
+	(
+		tween
+		. tween_property(self, "scale", Vector2(0.9, 1.2), 0.08)
+		. set_trans(Tween.TRANS_SINE)
+		. set_ease(Tween.EASE_IN_OUT)
+	)
 	# Chips to eat
 	for i in chips_to_eat.size():
 		var chip: ChipEye = chips_to_eat[i]

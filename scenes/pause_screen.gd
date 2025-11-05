@@ -2,19 +2,6 @@
 class_name PauseScreen
 extends Control
 
-@onready var blur_color_rect: ColorRect = $BlurColorRect
-@onready var info_button: Button = %InfoButton
-@onready var info_container: ScrollContainer = $UIPanelContainer/InfoContainer
-@onready var info_label: RichTextLabel = $UIPanelContainer/InfoContainer/InfoLabel
-@onready var play_friend_button: Button = %PlayFriendButton
-@onready var play_bot_button: Button = %PlayBotButton
-@onready var quit_button: Button = %QuitButton
-@onready var resume_button: Button = %ResumeButton
-@onready var ui_panel_container: PanelContainer = $UIPanelContainer
-@onready var v_box_container: VBoxContainer = $UIPanelContainer/VBoxContainer
-@onready var settings_button: OptionButton = %SettingsButton
-
-
 ## Controls how much the menu is opened. This isn't actually used in the running game
 ## but it allows us to preview the menu animation in the editor.
 @export_range(0, 1.0) var menu_opened_amount := 0.0:
@@ -27,6 +14,18 @@ var game_in_progress := false
 var is_bot_dumb: bool = false
 var _tween: Tween
 var _is_currently_opening := false
+
+@onready var blur_color_rect: ColorRect = $BlurColorRect
+@onready var info_button: Button = %InfoButton
+@onready var info_container: ScrollContainer = $UIPanelContainer/InfoContainer
+@onready var info_label: RichTextLabel = $UIPanelContainer/InfoContainer/InfoLabel
+@onready var play_friend_button: Button = %PlayFriendButton
+@onready var play_bot_button: Button = %PlayBotButton
+@onready var quit_button: Button = %QuitButton
+@onready var resume_button: Button = %ResumeButton
+@onready var ui_panel_container: PanelContainer = $UIPanelContainer
+@onready var v_box_container: VBoxContainer = $UIPanelContainer/VBoxContainer
+@onready var settings_button: OptionButton = %SettingsButton
 
 
 func _ready() -> void:

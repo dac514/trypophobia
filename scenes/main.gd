@@ -19,7 +19,7 @@ var current_chip_type: Globals.ChipType = Globals.ChipType.EYE
 var current_player_id: int = 2
 var current_turn: int = 0
 var is_against_bot: bool = false
-var is_mobile_device: bool = false;
+var is_mobile_device: bool = false
 var is_waiting_to_drop: bool = false
 
 @onready var board: Board = $Board
@@ -37,24 +37,29 @@ var is_waiting_to_drop: bool = false
 @onready var lotus_bg: TextureRect = $Backgrounds/Lotus
 @onready var main_bg: TextureRect = $Backgrounds/Main
 
+
 func _ready() -> void:
 	_is_mobile_device()
 	_connect_board()
-	t_button.pressed.connect(func() -> void:
-		if is_waiting_to_drop:
-			toggle_chip_type()
+	t_button.pressed.connect(
+		func() -> void:
+			if is_waiting_to_drop:
+				toggle_chip_type()
 	)
-	r_button.pressed.connect(func() -> void:
-		if is_waiting_to_drop:
-			toggle_chip_feature()
+	r_button.pressed.connect(
+		func() -> void:
+			if is_waiting_to_drop:
+				toggle_chip_feature()
 	)
-	play_bot_button.pressed.connect(func() -> void:
-		is_against_bot = true
-		start_new_game()
+	play_bot_button.pressed.connect(
+		func() -> void:
+			is_against_bot = true
+			start_new_game()
 	)
-	play_friend_button.pressed.connect(func() -> void:
-		is_against_bot = false
-		start_new_game()
+	play_friend_button.pressed.connect(
+		func() -> void:
+			is_against_bot = false
+			start_new_game()
 	)
 	if not pause_screen.visible:
 		pause_screen.toggle()
@@ -65,12 +70,8 @@ func _is_mobile_device() -> void:
 
 
 func _connect_board() -> void:
-	board.board_has_settled.connect(func() -> void:
-		start_new_turn.call_deferred()
-	)
-	board.game_over.connect(func(player_id: int) -> void:
-		game_over(player_id)
-	)
+	board.board_has_settled.connect(func() -> void: start_new_turn.call_deferred())
+	board.game_over.connect(func(player_id: int) -> void: game_over(player_id))
 
 
 func _input(event: InputEvent) -> void:
@@ -167,12 +168,16 @@ func start_new_turn() -> void:
 
 ## Make the chip follow the cursor within bounds
 func follow_chip(pos: Vector2) -> void:
-	current_chip.global_position = Vector2(clamp(pos.x, CHIP_X_MIN, CHIP_X_MAX), clamp(pos.y, CHIP_Y_MIN, CHIP_Y_MAX))
+	current_chip.global_position = Vector2(
+		clamp(pos.x, CHIP_X_MIN, CHIP_X_MAX), clamp(pos.y, CHIP_Y_MIN, CHIP_Y_MAX)
+	)
 
 
 ## Check if the position is within the drop area
 func can_drop_chip(pos: Vector2) -> bool:
-	var in_drop_area: bool = pos.x >= DROP_X_MIN and pos.x <= DROP_X_MAX and pos.y >= DROP_Y_MIN and pos.y <= DROP_Y_MAX
+	var in_drop_area: bool = (
+		pos.x >= DROP_X_MIN and pos.x <= DROP_X_MAX and pos.y >= DROP_Y_MIN and pos.y <= DROP_Y_MAX
+	)
 	return in_drop_area
 
 
@@ -183,10 +188,31 @@ func update_player_label(animate: bool) -> void:
 	if is_against_bot:
 		player2_name = "Bot"
 
-	var current_chip_img := "👾" if current_chip_type == Globals.ChipType.PACMAN else "💣" if current_chip_type == Globals.ChipType.BOMB else "👁️"
-	var turn_text := "%s, Turn %d, Chip %s" % [player1_name if current_player_id == 1 else player2_name, current_turn, current_chip_img]
-	var player1_text := "%s has %d 💣 and %d 👾" % [player1_name, chip_inventory[1][Globals.ChipType.BOMB], chip_inventory[1][Globals.ChipType.PACMAN]]
-	var player2_text := "%s has %d 💣 and %d 👾" % [player2_name, chip_inventory[2][Globals.ChipType.BOMB], chip_inventory[2][Globals.ChipType.PACMAN]]
+	var current_chip_img := (
+		"👾"
+		if current_chip_type == Globals.ChipType.PACMAN
+		else "💣" if current_chip_type == Globals.ChipType.BOMB else "👁️"
+	)
+	var turn_text := (
+		"%s, Turn %d, Chip %s"
+		% [player1_name if current_player_id == 1 else player2_name, current_turn, current_chip_img]
+	)
+	var player1_text := (
+		"%s has %d 💣 and %d 👾"
+		% [
+			player1_name,
+			chip_inventory[1][Globals.ChipType.BOMB],
+			chip_inventory[1][Globals.ChipType.PACMAN]
+		]
+	)
+	var player2_text := (
+		"%s has %d 💣 and %d 👾"
+		% [
+			player2_name,
+			chip_inventory[2][Globals.ChipType.BOMB],
+			chip_inventory[2][Globals.ChipType.PACMAN]
+		]
+	)
 	var new_text := "%s\n%s\n%s" % [turn_text, player1_text, player2_text]
 
 	# Animate the label change
@@ -210,7 +236,11 @@ func game_over(player_id: int) -> void:
 
 	var new_text: String
 	if player_id:
-		new_text = "GAME OVER \nThe winner is: " + (player1_name if player_id == 1 else player2_name) + " \n"
+		new_text = (
+			"GAME OVER \nThe winner is: "
+			+ (player1_name if player_id == 1 else player2_name)
+			+ " \n"
+		)
 	else:
 		new_text = "GAME OVER \nIt's a tie! \n"
 
@@ -236,7 +266,7 @@ func drop_chip(pos: Vector2 = Vector2.ZERO) -> void:
 	if is_instance_valid(current_chip):
 		board.place_chip(current_chip)
 	board.rotate_and_settle.call_deferred()
-	next_moves.stop_animation() # Stop again, for when bot drops too quickly
+	next_moves.stop_animation()  # Stop again, for when bot drops too quickly
 
 
 ## Spawn a new chip
@@ -264,7 +294,10 @@ func spawn_chip() -> void:
 	# Show or hide the R button based on whether the chip has a toggle_feature method
 	r_button.visible = current_chip.has_method("toggle_feature") if true else false
 	# Show or hide the T button based on inventory
-	if chip_inventory[current_player_id][Globals.ChipType.PACMAN] == 0 and chip_inventory[current_player_id][Globals.ChipType.BOMB] == 0:
+	if (
+		chip_inventory[current_player_id][Globals.ChipType.PACMAN] == 0
+		and chip_inventory[current_player_id][Globals.ChipType.BOMB] == 0
+	):
 		t_button.visible = false
 	else:
 		t_button.visible = true
@@ -311,7 +344,13 @@ func make_bot_move() -> void:
 	# Calculate move
 	var bot := Bot.new()
 	add_child(bot)
-	bot.find_best_move(board.grid_state, current_player_id, chip_inventory, board.board_rotator.next_rotation_states, pause_screen.is_bot_dumb)
+	bot.find_best_move(
+		board.grid_state,
+		current_player_id,
+		chip_inventory,
+		board.board_rotator.next_rotation_states,
+		pause_screen.is_bot_dumb
+	)
 	var move: BotMove = await bot.best_move
 	bot.worker.wait_to_finish()
 	bot.queue_free()
@@ -336,10 +375,15 @@ func make_bot_move() -> void:
 	var drop_x: float = DROP_X_MIN + (column * column_width)
 	var drop_y: float = DROP_Y_MIN + 100  # Drop near top of the drop area
 	var drop_position := Vector2(drop_x, drop_y)
-   	# Animate chip movement to drop position
+	# Animate chip movement to drop position
 	follow_chip(thinking_pos)
 	var tween := create_tween()
-	tween.tween_property(current_chip, "global_position", drop_position, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	(
+		tween
+		. tween_property(current_chip, "global_position", drop_position, 0.3)
+		. set_trans(Tween.TRANS_SINE)
+		. set_ease(Tween.EASE_IN_OUT)
+	)
 	await tween.finished
 	# Execute the drop
 	print("Bot dropping %s chip at column %d" % [Globals.ChipType.keys()[move.chip_type], column])

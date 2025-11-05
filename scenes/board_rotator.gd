@@ -6,7 +6,6 @@ signal board_has_settled(chips: Array[Chip])
 enum RotationDirection { LEFT = -1, RIGHT = 1 }
 enum RotationAmount { DEG_90 = 90, DEG_180 = 180 }
 
-var _chips_in_progress: Array[Chip] = []
 var chip_watcher: ChipWatcher
 var possible_rotation_states: Array[Dictionary] = [
 	{"direction": RotationDirection.RIGHT, "degrees": RotationAmount.DEG_90, "weight": 1},
@@ -17,12 +16,16 @@ var possible_rotation_states: Array[Dictionary] = [
 ]
 var next_rotation_states: Array[Dictionary] = []
 
+var _chips_in_progress: Array[Chip] = []
+
 @onready var board_rotator: BoardRotator = %BoardRotator
 @onready var chip_positions: Node2D = %ChipPositions
 
+
 func _ready() -> void:
 	_prepare_rotation_states()
-	var _state: Dictionary = next_rotation_states.pop_front()
+	next_rotation_states.pop_front()
+
 
 ## Rotate the board and settle the chips
 func rotate_and_settle() -> void:
@@ -81,10 +84,12 @@ func _disable_physics(val: bool) -> void:
 			chip.set_sleeping(val)
 
 
-func _rotate_board_animation(direction: int = RotationDirection.RIGHT, degrees: int = RotationAmount.DEG_90) -> void:
+func _rotate_board_animation(
+	direction: int = RotationDirection.RIGHT, degrees: int = RotationAmount.DEG_90
+) -> void:
 	# Scale duration so rotation speed is constant
-	var ROTATION_SPEED := 0.4 / RotationAmount.DEG_90 # seconds per 90 degrees
-	var duration: float = ROTATION_SPEED * abs(degrees)
+	var rotation_speed := 0.4 / RotationAmount.DEG_90  # seconds per 90 degrees
+	var duration: float = rotation_speed * abs(degrees)
 	var target_rotation := board_rotator.rotation_degrees + direction * degrees
 	var rotation_tween := create_tween()
 	rotation_tween.tween_method(

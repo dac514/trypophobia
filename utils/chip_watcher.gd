@@ -1,5 +1,5 @@
-## Watches a group of Chip objects and emits a signal when all have settled (i.e., entered sleep state),
-## or when a timeout occurs.
+## Watches a group of Chip objects and emits a signal when
+## all have settled (i.e., entered sleep state), or when a timeout occurs.
 class_name ChipWatcher
 extends Node
 
@@ -37,6 +37,7 @@ func watch(objects: Array[Chip], timeout: float = 3.0) -> void:
 	add_child(_timer)
 	_timer.start()
 
+
 func _on_object_sleep(obj: RigidBody2D) -> void:
 	if obj.is_sleeping:
 		_settling_count -= 1
@@ -59,7 +60,10 @@ func _emit_and_cleanup() -> void:
 
 func _cleanup() -> void:
 	for obj in _watched_objects:
-		if is_instance_valid(obj) and obj.sleeping_state_changed.is_connected(_on_object_sleep.bind(obj)):
+		if (
+			is_instance_valid(obj)
+			and obj.sleeping_state_changed.is_connected(_on_object_sleep.bind(obj))
+		):
 			obj.sleeping_state_changed.disconnect(_on_object_sleep.bind(obj))
 	_watched_objects.clear()
 	_settling_count = 0

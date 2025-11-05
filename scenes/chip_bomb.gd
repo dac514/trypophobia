@@ -6,6 +6,7 @@ const BOMB_BG = preload("res://assets/bomb-2x.png")
 @onready var exploding_area: Area2D = $ExplodingArea
 @onready var bomb: Sprite2D = $BombBackground
 
+
 func _ready() -> void:
 	bomb.texture = BOMB_BG
 

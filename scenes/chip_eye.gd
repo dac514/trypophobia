@@ -9,14 +9,14 @@ const PUPIL_TEXTURES = {
 	1: preload("res://assets/Googli-Black-2x.png"), 2: preload("res://assets/Googli-Green-2x.png")
 }
 
-@onready var eye: Sprite2D = $EyeBackground
-@onready var pupil: Sprite2D = $Pupil
-@onready var jiggle_timer: Timer = $JiggleTimer
-
 var current_jiggle := 0
 var max_jiggles := 12
 var pupil_radius := 16
 var jiggling := false
+
+@onready var eye: Sprite2D = $EyeBackground
+@onready var pupil: Sprite2D = $Pupil
+@onready var jiggle_timer: Timer = $JiggleTimer
 
 
 func _ready() -> void:
@@ -53,7 +53,9 @@ func animate_explode() -> void:
 	var explode_anim: AnimatedSprite2D = get_node("ExplosionAnim")
 	explode_anim.visible = true
 	explode_anim.play("explode")
-	explode_anim.animation_finished.connect(func() -> void: animate_explode_finished.emit(), CONNECT_ONE_SHOT)
+	explode_anim.animation_finished.connect(
+		func() -> void: animate_explode_finished.emit(), CONNECT_ONE_SHOT
+	)
 
 
 func animate_ghost() -> void:
@@ -62,7 +64,9 @@ func animate_ghost() -> void:
 	var ghost_anim: AnimatedSprite2D = get_node("GhostAnim")
 	ghost_anim.visible = true
 	ghost_anim.play("ghost")
-	ghost_anim.animation_finished.connect(func() -> void: animate_ghost_finished.emit(), CONNECT_ONE_SHOT)
+	ghost_anim.animation_finished.connect(
+		func() -> void: animate_ghost_finished.emit(), CONNECT_ONE_SHOT
+	)
 
 
 func _physics_process(_delta: float) -> void:
