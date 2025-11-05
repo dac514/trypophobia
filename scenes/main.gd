@@ -103,8 +103,7 @@ func _input(event: InputEvent) -> void:
 		if event.pressed:
 			follow_chip(pos)
 			return
-		else:
-			is_click = true
+		is_click = true
 	elif event is InputEventMouseButton:
 		# Tracks desktop click/release AND stylus press/release
 		pos = event.position

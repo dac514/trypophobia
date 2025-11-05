@@ -297,24 +297,24 @@ func _check_block(
 									)
 								)
 								return blocking_move
-							else:
-								# Collect bomb candidate to choose the least self-destructive later
-								var meta := blocking_board.last_action_meta
-								var self_d: int = int(meta.get("destroyed_self", 0))
-								var opp_d: int = int(meta.get("destroyed_opp", 0))
-								var center_col: int = int(float(board.GRID_SIZE.x) / 2.0)
-								var tie: int = abs(blocking_move.column - center_col)
-								(
-									bomb_candidates
-									. append(
-										{
-											"move": blocking_move,
-											"self_d": self_d,
-											"opp_d": opp_d,
-											"tie": tie,
-										}
-									)
+
+							# Collect bomb candidate to choose the least self-destructive later
+							var meta := blocking_board.last_action_meta
+							var self_d: int = int(meta.get("destroyed_self", 0))
+							var opp_d: int = int(meta.get("destroyed_opp", 0))
+							var center_col: int = int(float(board.GRID_SIZE.x) / 2.0)
+							var tie: int = abs(blocking_move.column - center_col)
+							(
+								bomb_candidates
+								. append(
+									{
+										"move": blocking_move,
+										"self_d": self_d,
+										"opp_d": opp_d,
+										"tie": tie,
+									}
 								)
+							)
 
 		# If any bomb candidates were collected, choose the least self-destructive one
 		if bomb_candidates.size() > 0:
@@ -380,6 +380,9 @@ func _check_block(
 			return best_block_move
 
 	return null
+
+
+# gdlint:disable = max-returns, no-else-return
 
 
 ## Minimax algorithm with alpha-beta pruning for optimal move evaluation
@@ -590,6 +593,9 @@ func _minimax(
 		if evaluated_all_moves and not search_was_cutoff and not is_time_pressured:
 			transposition_table[hash_key] = min_eval
 		return min_eval
+
+
+# gdlint:enable = max-returns, no-else-return
 
 
 ## Simulates inventory changes after a chip is used

@@ -3,6 +3,7 @@ class_name Globals
 
 enum ChipType { EYE, BOMB, PACMAN }
 
+# gdlint: disable=max-line-length
 static var game_info := """
 [url=back_to_menu][font_size=32]< Back[/font_size][/url]
 
