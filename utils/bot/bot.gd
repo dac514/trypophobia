@@ -6,13 +6,7 @@ signal best_move(best_move: BotMove)
 var worker: BotWorker = null
 
 
-func find_best_move(
-	grid_state: Array,
-	player_id: int,
-	chip_inventory: Dictionary,
-	next_rotation_states: Array,
-	is_bot_dumb: bool
-) -> void:
+func find_best_move(grid_state: Array, player_id: int, chip_inventory: Dictionary, next_rotation_states: Array, is_bot_dumb: bool) -> void:
 	if worker and worker.is_alive():
 		print("Bot: Still thinking...")
 		return

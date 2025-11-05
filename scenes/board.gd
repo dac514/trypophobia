@@ -52,9 +52,7 @@ func find_nearest_pos(chip_to_check: Chip) -> Node2D:
 	var min_distance := INF
 
 	for pos_node in positions:
-		var distance: float = chip_to_check.global_position.distance_to(
-			(pos_node as Node2D).global_position
-		)
+		var distance: float = chip_to_check.global_position.distance_to((pos_node as Node2D).global_position)
 		if distance < min_distance:
 			min_distance = distance
 			nearest_pos = pos_node
@@ -108,25 +106,14 @@ func check_for_win(column: int, row: int) -> int:
 		return -1
 
 	var player_id: int = grid_state[column][row].player_id
-	var directions: Array[Vector2i] = [
-		Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)
-	]
+	var directions: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)]
 
 	for direction in directions:
 		var chips_in_a_row := [grid_state[column][row]]
 		# Check one direction
-		chips_in_a_row.append_array(
-			_get_line(column + direction.x, row + direction.y, direction, player_id)
-		)
+		chips_in_a_row.append_array(_get_line(column + direction.x, row + direction.y, direction, player_id))
 		# Check the opposite direction
-		chips_in_a_row.append_array(
-			_get_line(
-				column - direction.x,
-				row - direction.y,
-				Vector2i(-direction.x, -direction.y),
-				player_id
-			)
-		)
+		chips_in_a_row.append_array(_get_line(column - direction.x, row - direction.y, Vector2i(-direction.x, -direction.y), player_id))
 		if chips_in_a_row.size() >= 4:
 			_highlight_winning_chips(chips_in_a_row)
 			# game_over.emit(player_id)
@@ -141,14 +128,10 @@ func _get_line(col: int, row: int, direction: Vector2i, player_id: int) -> Array
 	if col < 0 or col >= GRID_SIZE.x or row < 0 or row >= GRID_SIZE.y:
 		return line_chips
 
-	var current_chip: Chip = (
-		grid_state[col][row] if is_instance_valid(grid_state[col][row]) else null
-	)
+	var current_chip: Chip = grid_state[col][row] if is_instance_valid(grid_state[col][row]) else null
 	if current_chip and current_chip.player_id == player_id:
 		line_chips.append(current_chip)
-		line_chips.append_array(
-			_get_line(col + direction.x, row + direction.y, direction, player_id)
-		)
+		line_chips.append_array(_get_line(col + direction.x, row + direction.y, direction, player_id))
 
 	return line_chips
 

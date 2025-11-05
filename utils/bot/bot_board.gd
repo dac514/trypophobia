@@ -69,21 +69,11 @@ func _check_for_win_on(board_arr: Array, column: int, row: int) -> bool:
 	if player_id == 0:
 		return false
 
-	var directions: Array[Vector2i] = [
-		Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)
-	]
+	var directions: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)]
 	for direction in directions:
 		var chips_in_a_row := 1
-		chips_in_a_row += _count_line(
-			board_arr, column + direction.x, row + direction.y, direction, player_id
-		)
-		chips_in_a_row += _count_line(
-			board_arr,
-			column - direction.x,
-			row - direction.y,
-			Vector2i(-direction.x, -direction.y),
-			player_id
-		)
+		chips_in_a_row += _count_line(board_arr, column + direction.x, row + direction.y, direction, player_id)
+		chips_in_a_row += _count_line(board_arr, column - direction.x, row - direction.y, Vector2i(-direction.x, -direction.y), player_id)
 		if chips_in_a_row >= 4:
 			return true
 
@@ -194,19 +184,12 @@ func _apply_gravity(current_board: Array) -> Array:
 
 
 # A helper function to find a continuous line of chips
-func _count_line(
-	current_board: Array, col: int, row: int, direction: Vector2i, player_id: int
-) -> int:
+func _count_line(current_board: Array, col: int, row: int, direction: Vector2i, player_id: int) -> int:
 	var count := 0
 	var current_col := col
 	var current_row := row
 
-	while (
-		current_col >= 0
-		and current_col < GRID_SIZE.x
-		and current_row >= 0
-		and current_row < GRID_SIZE.y
-	):
+	while current_col >= 0 and current_col < GRID_SIZE.x and current_row >= 0 and current_row < GRID_SIZE.y:
 		if current_board[current_col][current_row] != player_id:
 			break
 		count += 1
@@ -217,9 +200,7 @@ func _count_line(
 
 
 ## Creates a new BotBoard with a move applied (placement + effects + rotation + gravity)
-func simulate_move_and_rotation(
-	move: BotMove, player_id: int, next_rotation_states: Array
-) -> BotBoard:
+func simulate_move_and_rotation(move: BotMove, player_id: int, next_rotation_states: Array) -> BotBoard:
 	var new_board := simulate_move(move, player_id)
 	# Apply rotation if available
 	if next_rotation_states.size() > 0:
@@ -251,12 +232,8 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 		var after_counts := _count_pieces_by_player(current_board)
 		var self_id := player_id
 		var opp_id := 3 - player_id
-		var destroyed_self: int = max(
-			0, int(before_counts.get(self_id, 0)) - int(after_counts.get(self_id, 0))
-		)
-		var destroyed_opp: int = max(
-			0, int(before_counts.get(opp_id, 0)) - int(after_counts.get(opp_id, 0))
-		)
+		var destroyed_self: int = max(0, int(before_counts.get(self_id, 0)) - int(after_counts.get(self_id, 0)))
+		var destroyed_opp: int = max(0, int(before_counts.get(opp_id, 0)) - int(after_counts.get(opp_id, 0)))
 		new_board.last_action_meta = {
 			"move_type": "bomb",
 			"destroyed_self": destroyed_self,
@@ -269,12 +246,8 @@ func simulate_move(move: BotMove, player_id: int) -> BotBoard:
 		var after_counts := _count_pieces_by_player(current_board)
 		var self_id := player_id
 		var opp_id := 3 - player_id
-		var destroyed_self: int = max(
-			0, int(before_counts.get(self_id, 0)) - int(after_counts.get(self_id, 0))
-		)
-		var destroyed_opp: int = max(
-			0, int(before_counts.get(opp_id, 0)) - int(after_counts.get(opp_id, 0))
-		)
+		var destroyed_self: int = max(0, int(before_counts.get(self_id, 0)) - int(after_counts.get(self_id, 0)))
+		var destroyed_opp: int = max(0, int(before_counts.get(opp_id, 0)) - int(after_counts.get(opp_id, 0)))
 		new_board.last_action_meta = {
 			"move_type": "pacman",
 			"destroyed_self": destroyed_self,
@@ -373,13 +346,7 @@ func _apply_bomb_effect(current_board: Array, col: int, row: int) -> void:
 		for dy: int in [-1, 0, 1]:
 			var nx: int = col + dx
 			var ny: int = row + dy
-			if (
-				(dx != 0 or dy != 0)
-				and nx >= 0
-				and nx < GRID_SIZE.x
-				and ny >= 0
-				and ny < GRID_SIZE.y
-			):
+			if (dx != 0 or dy != 0) and nx >= 0 and nx < GRID_SIZE.x and ny >= 0 and ny < GRID_SIZE.y:
 				current_board[nx][ny] = 0
 	# Remove self
 	current_board[col][row] = 0
@@ -407,13 +374,9 @@ func _get_pacman_direction(direction: String) -> Vector2i:
 			return Vector2i(1, 0)
 
 
-func _evaluate_lines_from_position(
-	current_board: Array, col: int, row: int, player_id: int
-) -> float:
+func _evaluate_lines_from_position(current_board: Array, col: int, row: int, player_id: int) -> float:
 	var line_score: float = 0.0
-	var directions: Array[Vector2i] = [
-		Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)
-	]
+	var directions: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(1, -1)]
 
 	for direction in directions:
 		var count: int = 1  # Current chip
@@ -478,9 +441,7 @@ func _score_board_array(board_arr: Array, player_id: int) -> float:
 				score += pmul * bottom_bonus
 
 				# Mild center bias
-				var center_distance: float = (
-					abs(col - GRID_SIZE.x / 2.0) + abs(row - GRID_SIZE.y / 2.0)
-				)
+				var center_distance: float = abs(col - GRID_SIZE.x / 2.0) + abs(row - GRID_SIZE.y / 2.0)
 				score += pmul * max(0.0, 1.5 - center_distance * 0.4)
 
 				# Lines
@@ -500,9 +461,7 @@ func _score_board_array(board_arr: Array, player_id: int) -> float:
 	for col in range(GRID_SIZE.x):
 		for row in range(GRID_SIZE.y):
 			if board_arr[col][row] == opponent_id:
-				var opp_line_score := _evaluate_lines_from_position(
-					board_arr, col, row, opponent_id
-				)
+				var opp_line_score := _evaluate_lines_from_position(board_arr, col, row, opponent_id)
 				if opp_line_score >= 9.0:
 					score -= 50.0
 
@@ -513,9 +472,7 @@ func _apply_rotation_to_array(board_arr: Array, rotation_state: Dictionary) -> A
 	var direction: int = rotation_state.get("direction", 0)
 	var degrees: int = rotation_state.get("degrees", 0)
 	if degrees == 90:
-		return (
-			_rotate_grid_right_90(board_arr) if direction == 1 else _rotate_grid_left_90(board_arr)
-		)
+		return _rotate_grid_right_90(board_arr) if direction == 1 else _rotate_grid_left_90(board_arr)
 
 	if degrees == 180:
 		return _rotate_grid_180(board_arr)

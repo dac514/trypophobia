@@ -100,8 +100,7 @@ func _set_texture(state: Dictionary) -> TextureRect:
 
 func _animate_next_move(tex_rect: TextureRect, state: Dictionary) -> void:
 	var is_not_a_rotation: bool = !(
-		state.degrees == BoardRotator.RotationAmount.DEG_90
-		or state.degrees == BoardRotator.RotationAmount.DEG_180
+		state.degrees == BoardRotator.RotationAmount.DEG_90 or state.degrees == BoardRotator.RotationAmount.DEG_180
 	)
 
 	# Ensure any previous looping tween is stopped
@@ -147,9 +146,7 @@ func _animate_next_move(tex_rect: TextureRect, state: Dictionary) -> void:
 					sub_tween.set_parallel(true)
 					sub_tween.tween_property(tex_rect, "rotation", target, 0.6 if is_90 else 0.9)
 					# Counter-rotate the hint to keep it upright
-					sub_tween.tween_property(
-						hint, "rotation", hint.rotation - rotation_step, 0.6 if is_90 else 0.9
-					)
+					sub_tween.tween_property(hint, "rotation", hint.rotation - rotation_step, 0.6 if is_90 else 0.9)
 		)
 		rotation_preview_tween.tween_interval(0.6 if is_90 else 0.9)
 

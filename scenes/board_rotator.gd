@@ -84,9 +84,7 @@ func _disable_physics(val: bool) -> void:
 			chip.set_sleeping(val)
 
 
-func _rotate_board_animation(
-	direction: int = RotationDirection.RIGHT, degrees: int = RotationAmount.DEG_90
-) -> void:
+func _rotate_board_animation(direction: int = RotationDirection.RIGHT, degrees: int = RotationAmount.DEG_90) -> void:
 	# Scale duration so rotation speed is constant
 	var rotation_speed := 0.4 / RotationAmount.DEG_90  # seconds per 90 degrees
 	var duration: float = rotation_speed * abs(degrees)

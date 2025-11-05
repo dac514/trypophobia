@@ -60,10 +60,7 @@ func _emit_and_cleanup() -> void:
 
 func _cleanup() -> void:
 	for obj in _watched_objects:
-		if (
-			is_instance_valid(obj)
-			and obj.sleeping_state_changed.is_connected(_on_object_sleep.bind(obj))
-		):
+		if is_instance_valid(obj) and obj.sleeping_state_changed.is_connected(_on_object_sleep.bind(obj)):
 			obj.sleeping_state_changed.disconnect(_on_object_sleep.bind(obj))
 	_watched_objects.clear()
 	_settling_count = 0

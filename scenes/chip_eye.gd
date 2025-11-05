@@ -5,9 +5,7 @@ signal animate_ghost_finished
 signal animate_explode_finished
 
 const EYE_BG = preload("res://assets/Googli-1-2x.png")
-const PUPIL_TEXTURES = {
-	1: preload("res://assets/Googli-Black-2x.png"), 2: preload("res://assets/Googli-Green-2x.png")
-}
+const PUPIL_TEXTURES = {1: preload("res://assets/Googli-Black-2x.png"), 2: preload("res://assets/Googli-Green-2x.png")}
 
 var current_jiggle := 0
 var max_jiggles := 12
@@ -53,9 +51,7 @@ func animate_explode() -> void:
 	var explode_anim: AnimatedSprite2D = get_node("ExplosionAnim")
 	explode_anim.visible = true
 	explode_anim.play("explode")
-	explode_anim.animation_finished.connect(
-		func() -> void: animate_explode_finished.emit(), CONNECT_ONE_SHOT
-	)
+	explode_anim.animation_finished.connect(func() -> void: animate_explode_finished.emit(), CONNECT_ONE_SHOT)
 
 
 func animate_ghost() -> void:
@@ -64,9 +60,7 @@ func animate_ghost() -> void:
 	var ghost_anim: AnimatedSprite2D = get_node("GhostAnim")
 	ghost_anim.visible = true
 	ghost_anim.play("ghost")
-	ghost_anim.animation_finished.connect(
-		func() -> void: animate_ghost_finished.emit(), CONNECT_ONE_SHOT
-	)
+	ghost_anim.animation_finished.connect(func() -> void: animate_ghost_finished.emit(), CONNECT_ONE_SHOT)
 
 
 func _physics_process(_delta: float) -> void:
