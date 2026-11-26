@@ -1,0 +1,74 @@
+{
+    // Every task runs a bash script in scripts/. On Windows it runs inside the
+    // default WSL distro, so tools only need installing on the Linux side.
+    // "process" tasks pass args verbatim (no shell in between to re-parse them).
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Test",
+            "type": "process",
+            "command": "bash",
+            "args": ["scripts/test.sh"],
+            "windows": {
+                "command": "wsl.exe",
+                "args": ["--cd", "${workspaceFolder}", "--exec", "bash", "scripts/test.sh"]
+            },
+            "group": { "kind": "test", "isDefault": true },
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint",
+            "type": "process",
+            "command": "bash",
+            "args": ["scripts/lint.sh"],
+            "windows": {
+                "command": "wsl.exe",
+                "args": ["--cd", "${workspaceFolder}", "--exec", "bash", "scripts/lint.sh"]
+            },
+            "problemMatcher": {
+                "owner": "gdlint",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.+\\.gd):(\\d+): (Error): (.+)$",
+                    "file": 1,
+                    "line": 2,
+                    "severity": 3,
+                    "message": 4
+                }
+            }
+        },
+        {
+            "label": "Format (check)",
+            "type": "process",
+            "command": "bash",
+            "args": ["scripts/format.sh", "--check"],
+            "windows": {
+                "command": "wsl.exe",
+                "args": ["--cd", "${workspaceFolder}", "--exec", "bash", "scripts/format.sh", "--check"]
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Format (apply)",
+            "type": "process",
+            "command": "bash",
+            "args": ["scripts/format.sh"],
+            "windows": {
+                "command": "wsl.exe",
+                "args": ["--cd", "${workspaceFolder}", "--exec", "bash", "scripts/format.sh"]
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Doctor",
+            "type": "process",
+            "command": "bash",
+            "args": ["scripts/doctor.sh"],
+            "windows": {
+                "command": "wsl.exe",
+                "args": ["--cd", "${workspaceFolder}", "--exec", "bash", "scripts/doctor.sh"]
+            },
+            "problemMatcher": []
+        }
+    ]
+}

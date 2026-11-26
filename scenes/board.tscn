@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://nag3vhk10o18"]
+[gd_scene format=3 uid="uid://nag3vhk10o18"]
 
 [ext_resource type="Script" uid="uid://bgm6vmh8d2l6d" path="res://scenes/board.gd" id="1_qails"]
 [ext_resource type="Script" uid="uid://c4p0wblsq5yee" path="res://scenes/board_rotator.gd" id="2_nglv8"]
@@ -42,14 +42,14 @@ size = Vector2(1, 800)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_n230i"]
 size = Vector2(1, 800)
 
-[node name="Board" type="Node2D"]
+[node name="Board" type="Node2D" unique_id=1579192125]
 script = ExtResource("1_qails")
 
-[node name="BoardRotator" type="Node2D" parent="."]
+[node name="BoardRotator" type="Node2D" parent="." unique_id=783979753]
 unique_name_in_owner = true
 script = ExtResource("2_nglv8")
 
-[node name="Sprite2D" type="TextureRect" parent="BoardRotator"]
+[node name="Sprite2D" type="TextureRect" parent="BoardRotator" unique_id=695559091]
 offset_left = -288.0
 offset_top = -288.0
 offset_right = 864.0
@@ -57,7 +57,7 @@ offset_bottom = 864.0
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_fv4ni")
 
-[node name="ColorRect" type="ColorRect" parent="BoardRotator/Sprite2D"]
+[node name="ColorRect" type="ColorRect" parent="BoardRotator/Sprite2D" unique_id=947104250]
 material = SubResource("ShaderMaterial_dxjtj")
 layout_mode = 1
 anchors_preset = 15
@@ -70,147 +70,147 @@ offset_bottom = 0.07080078
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GridCollision" type="StaticBody2D" parent="."]
+[node name="GridCollision" type="StaticBody2D" parent="." unique_id=112924553]
 
-[node name="Floor" type="CollisionShape2D" parent="GridCollision"]
+[node name="Floor" type="CollisionShape2D" parent="GridCollision" unique_id=216632403]
 position = Vector2(0, 288)
 shape = SubResource("RectangleShape2D_tx6nw")
 
-[node name="Col" type="CollisionShape2D" parent="GridCollision"]
+[node name="Col" type="CollisionShape2D" parent="GridCollision" unique_id=557668461]
 position = Vector2(-287, -112)
 shape = SubResource("RectangleShape2D_nglv8")
 
-[node name="Col2" type="CollisionShape2D" parent="GridCollision"]
+[node name="Col2" type="CollisionShape2D" parent="GridCollision" unique_id=1205214545]
 position = Vector2(-191, -112)
 shape = SubResource("RectangleShape2D_fv4ni")
 
-[node name="Col3" type="CollisionShape2D" parent="GridCollision"]
+[node name="Col3" type="CollisionShape2D" parent="GridCollision" unique_id=1204639317]
 position = Vector2(-95, -112)
 shape = SubResource("RectangleShape2D_dxjtj")
 
-[node name="Col4" type="CollisionShape2D" parent="GridCollision"]
+[node name="Col4" type="CollisionShape2D" parent="GridCollision" unique_id=1468616481]
 position = Vector2(1, -112)
 shape = SubResource("RectangleShape2D_dun80")
 
-[node name="Col5" type="CollisionShape2D" parent="GridCollision"]
+[node name="Col5" type="CollisionShape2D" parent="GridCollision" unique_id=1847365281]
 position = Vector2(97, -112)
 shape = SubResource("RectangleShape2D_c3r7o")
 
-[node name="Col6" type="CollisionShape2D" parent="GridCollision"]
+[node name="Col6" type="CollisionShape2D" parent="GridCollision" unique_id=1727925542]
 position = Vector2(193, -112)
 shape = SubResource("RectangleShape2D_wmvsh")
 
-[node name="Col7" type="CollisionShape2D" parent="GridCollision"]
+[node name="Col7" type="CollisionShape2D" parent="GridCollision" unique_id=2107823469]
 position = Vector2(289, -112)
 shape = SubResource("RectangleShape2D_n230i")
 
-[node name="ChipPositions" type="Node2D" parent="."]
+[node name="ChipPositions" type="Node2D" parent="." unique_id=637250904]
 unique_name_in_owner = true
 
-[node name="Pos_0_0" type="Node2D" parent="ChipPositions"]
+[node name="Pos_0_0" type="Node2D" parent="ChipPositions" unique_id=1385123138]
 position = Vector2(-240, -240)
 
-[node name="Pos_0_1" type="Node2D" parent="ChipPositions"]
+[node name="Pos_0_1" type="Node2D" parent="ChipPositions" unique_id=716692747]
 position = Vector2(-144, -240)
 
-[node name="Pos_0_2" type="Node2D" parent="ChipPositions"]
+[node name="Pos_0_2" type="Node2D" parent="ChipPositions" unique_id=1600258885]
 position = Vector2(-48, -240)
 
-[node name="Pos_0_3" type="Node2D" parent="ChipPositions"]
+[node name="Pos_0_3" type="Node2D" parent="ChipPositions" unique_id=1876457879]
 position = Vector2(48, -240)
 
-[node name="Pos_0_4" type="Node2D" parent="ChipPositions"]
+[node name="Pos_0_4" type="Node2D" parent="ChipPositions" unique_id=1186794928]
 position = Vector2(144, -240)
 
-[node name="Pos_0_5" type="Node2D" parent="ChipPositions"]
+[node name="Pos_0_5" type="Node2D" parent="ChipPositions" unique_id=1597630750]
 position = Vector2(240, -240)
 
-[node name="Pos_1_0" type="Node2D" parent="ChipPositions"]
+[node name="Pos_1_0" type="Node2D" parent="ChipPositions" unique_id=217079883]
 position = Vector2(-240, -144)
 
-[node name="Pos_1_1" type="Node2D" parent="ChipPositions"]
+[node name="Pos_1_1" type="Node2D" parent="ChipPositions" unique_id=99203342]
 position = Vector2(-144, -144)
 
-[node name="Pos_1_2" type="Node2D" parent="ChipPositions"]
+[node name="Pos_1_2" type="Node2D" parent="ChipPositions" unique_id=1863868999]
 position = Vector2(-48, -144)
 
-[node name="Pos_1_3" type="Node2D" parent="ChipPositions"]
+[node name="Pos_1_3" type="Node2D" parent="ChipPositions" unique_id=979070436]
 position = Vector2(48, -144)
 
-[node name="Pos_1_4" type="Node2D" parent="ChipPositions"]
+[node name="Pos_1_4" type="Node2D" parent="ChipPositions" unique_id=1426793432]
 position = Vector2(144, -144)
 
-[node name="Pos_1_5" type="Node2D" parent="ChipPositions"]
+[node name="Pos_1_5" type="Node2D" parent="ChipPositions" unique_id=1577080219]
 position = Vector2(240, -144)
 
-[node name="Pos_2_0" type="Node2D" parent="ChipPositions"]
+[node name="Pos_2_0" type="Node2D" parent="ChipPositions" unique_id=311553941]
 position = Vector2(-240, -48)
 
-[node name="Pos_2_1" type="Node2D" parent="ChipPositions"]
+[node name="Pos_2_1" type="Node2D" parent="ChipPositions" unique_id=2102345690]
 position = Vector2(-144, -48)
 
-[node name="Pos_2_2" type="Node2D" parent="ChipPositions"]
+[node name="Pos_2_2" type="Node2D" parent="ChipPositions" unique_id=1731684190]
 position = Vector2(-48, -48)
 
-[node name="Pos_2_3" type="Node2D" parent="ChipPositions"]
+[node name="Pos_2_3" type="Node2D" parent="ChipPositions" unique_id=776730467]
 position = Vector2(48, -48)
 
-[node name="Pos_2_4" type="Node2D" parent="ChipPositions"]
+[node name="Pos_2_4" type="Node2D" parent="ChipPositions" unique_id=1770855850]
 position = Vector2(144, -48)
 
-[node name="Pos_2_5" type="Node2D" parent="ChipPositions"]
+[node name="Pos_2_5" type="Node2D" parent="ChipPositions" unique_id=169113234]
 position = Vector2(240, -48)
 
-[node name="Pos_3_0" type="Node2D" parent="ChipPositions"]
+[node name="Pos_3_0" type="Node2D" parent="ChipPositions" unique_id=864346504]
 position = Vector2(-240, 48)
 
-[node name="Pos_3_1" type="Node2D" parent="ChipPositions"]
+[node name="Pos_3_1" type="Node2D" parent="ChipPositions" unique_id=1131864088]
 position = Vector2(-144, 48)
 
-[node name="Pos_3_2" type="Node2D" parent="ChipPositions"]
+[node name="Pos_3_2" type="Node2D" parent="ChipPositions" unique_id=243017701]
 position = Vector2(-48, 48)
 
-[node name="Pos_3_3" type="Node2D" parent="ChipPositions"]
+[node name="Pos_3_3" type="Node2D" parent="ChipPositions" unique_id=1718250707]
 position = Vector2(48, 48)
 
-[node name="Pos_3_4" type="Node2D" parent="ChipPositions"]
+[node name="Pos_3_4" type="Node2D" parent="ChipPositions" unique_id=1516004042]
 position = Vector2(144, 48)
 
-[node name="Pos_3_5" type="Node2D" parent="ChipPositions"]
+[node name="Pos_3_5" type="Node2D" parent="ChipPositions" unique_id=609323670]
 position = Vector2(240, 48)
 
-[node name="Pos_4_0" type="Node2D" parent="ChipPositions"]
+[node name="Pos_4_0" type="Node2D" parent="ChipPositions" unique_id=1199514020]
 position = Vector2(-240, 144)
 
-[node name="Pos_4_1" type="Node2D" parent="ChipPositions"]
+[node name="Pos_4_1" type="Node2D" parent="ChipPositions" unique_id=228514171]
 position = Vector2(-144, 144)
 
-[node name="Pos_4_2" type="Node2D" parent="ChipPositions"]
+[node name="Pos_4_2" type="Node2D" parent="ChipPositions" unique_id=1983503581]
 position = Vector2(-48, 144)
 
-[node name="Pos_4_3" type="Node2D" parent="ChipPositions"]
+[node name="Pos_4_3" type="Node2D" parent="ChipPositions" unique_id=159960664]
 position = Vector2(48, 144)
 
-[node name="Pos_4_4" type="Node2D" parent="ChipPositions"]
+[node name="Pos_4_4" type="Node2D" parent="ChipPositions" unique_id=744587583]
 position = Vector2(144, 144)
 
-[node name="Pos_4_5" type="Node2D" parent="ChipPositions"]
+[node name="Pos_4_5" type="Node2D" parent="ChipPositions" unique_id=515893300]
 position = Vector2(240, 144)
 
-[node name="Pos_5_0" type="Node2D" parent="ChipPositions"]
+[node name="Pos_5_0" type="Node2D" parent="ChipPositions" unique_id=1060501838]
 position = Vector2(-240, 240)
 
-[node name="Pos_5_1" type="Node2D" parent="ChipPositions"]
+[node name="Pos_5_1" type="Node2D" parent="ChipPositions" unique_id=228534107]
 position = Vector2(-144, 240)
 
-[node name="Pos_5_2" type="Node2D" parent="ChipPositions"]
+[node name="Pos_5_2" type="Node2D" parent="ChipPositions" unique_id=1303857667]
 position = Vector2(-48, 240)
 
-[node name="Pos_5_3" type="Node2D" parent="ChipPositions"]
+[node name="Pos_5_3" type="Node2D" parent="ChipPositions" unique_id=1501027111]
 position = Vector2(48, 240)
 
-[node name="Pos_5_4" type="Node2D" parent="ChipPositions"]
+[node name="Pos_5_4" type="Node2D" parent="ChipPositions" unique_id=827728364]
 position = Vector2(144, 240)
 
-[node name="Pos_5_5" type="Node2D" parent="ChipPositions"]
+[node name="Pos_5_5" type="Node2D" parent="ChipPositions" unique_id=1922662430]
 position = Vector2(240, 240)

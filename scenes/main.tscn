@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://cu3cvajew1ssc"]
+[gd_scene format=3 uid="uid://cu3cvajew1ssc"]
 
 [ext_resource type="PackedScene" uid="uid://nag3vhk10o18" path="res://scenes/board.tscn" id="1_o5qli"]
 [ext_resource type="Script" uid="uid://lq25jewf502y" path="res://scenes/main.gd" id="1_sugp2"]
@@ -6,20 +6,20 @@
 [ext_resource type="PackedScene" uid="uid://cuyq318nwu8hl" path="res://scenes/ui.tscn" id="4_tbgi4"]
 [ext_resource type="PackedScene" uid="uid://d0kc4135ua778" path="res://scenes/pause_screen.tscn" id="5_tefeu"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" unique_id=1020996188]
 script = ExtResource("1_sugp2")
 
-[node name="Board" parent="." instance=ExtResource("1_o5qli")]
+[node name="Board" parent="." unique_id=1881120967 instance=ExtResource("1_o5qli")]
 z_index = 1
 position = Vector2(640, 432)
 
-[node name="Backgrounds" parent="." instance=ExtResource("2_tbgi4")]
+[node name="Backgrounds" parent="." unique_id=430172153 instance=ExtResource("2_tbgi4")]
 
-[node name="UI" parent="Backgrounds" instance=ExtResource("4_tbgi4")]
+[node name="UI" parent="Backgrounds" unique_id=1734531001 instance=ExtResource("4_tbgi4")]
 unique_name_in_owner = true
 layout_mode = 1
 
-[node name="PauseScreen" parent="Backgrounds" instance=ExtResource("5_tefeu")]
+[node name="PauseScreen" parent="Backgrounds" unique_id=1649728469 instance=ExtResource("5_tefeu")]
 unique_name_in_owner = true
 visible = false
 z_index = 2

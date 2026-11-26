@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://c43p6c3n0h6hu"]
+[gd_scene format=3 uid="uid://c43p6c3n0h6hu"]
 
 [ext_resource type="Script" uid="uid://ddb0jhcml5a6u" path="res://scenes/chip_pacman.gd" id="1_53638"]
 [ext_resource type="Texture2D" uid="uid://ceu3dbec77tuh" path="res://assets/mushchomp-2x.png" id="2_qh6cm"]
@@ -12,22 +12,22 @@ radius = 46.0
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qh6cm"]
 size = Vector2(96, 10)
 
-[node name="ChipPacman" type="RigidBody2D"]
+[node name="ChipPacman" type="RigidBody2D" unique_id=2030901016]
 physics_material_override = SubResource("PhysicsMaterial_su0yu")
 gravity_scale = 2.5
 lock_rotation = true
 contact_monitor = true
 script = ExtResource("1_53638")
 
-[node name="PacmanBackground" type="Sprite2D" parent="."]
+[node name="PacmanBackground" type="Sprite2D" parent="." unique_id=2126840918]
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("2_qh6cm")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1173646109]
 shape = SubResource("CircleShape2D_su0yu")
 
-[node name="MunchingArea" type="Area2D" parent="."]
+[node name="MunchingArea" type="Area2D" parent="." unique_id=1129715721]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="MunchingArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MunchingArea" unique_id=179684841]
 position = Vector2(48, 0)
 shape = SubResource("RectangleShape2D_qh6cm")

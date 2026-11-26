@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://dl51r4x4hbehw"]
+[gd_scene format=3 uid="uid://dl51r4x4hbehw"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_du14x"]
 
-[node name="DegreesHint" type="RichTextLabel"]
+[node name="DegreesHint" type="RichTextLabel" unique_id=1106969544]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
