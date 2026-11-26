@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://d0kc4135ua778"]
+[gd_scene format=3 uid="uid://d0kc4135ua778"]
 
 [ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/Rubik-Bold.ttf" id="1_gchx3"]
 [ext_resource type="Script" uid="uid://c5g5ifvvi8brj" path="res://scenes/pause_screen.gd" id="2_qeunj"]
@@ -107,7 +107,7 @@ corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 shadow_size = 7
 
-[node name="PauseScreen" type="Control"]
+[node name="PauseScreen" type="Control" unique_id=229892470]
 process_mode = 3
 layout_mode = 3
 anchors_preset = 15
@@ -118,7 +118,7 @@ grow_vertical = 2
 theme = SubResource("Theme_85g3d")
 script = ExtResource("2_qeunj")
 
-[node name="BlurColorRect" type="ColorRect" parent="."]
+[node name="BlurColorRect" type="ColorRect" parent="." unique_id=1844320918]
 material = SubResource("ShaderMaterial_27awe")
 layout_mode = 1
 anchors_preset = 15
@@ -127,7 +127,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="UIPanelContainer" type="PanelContainer" parent="."]
+[node name="UIPanelContainer" type="PanelContainer" parent="." unique_id=497613019]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -142,48 +142,48 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_hr2n2")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UIPanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UIPanelContainer" unique_id=555900601]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="UIPanelContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="UIPanelContainer/VBoxContainer" unique_id=755658238]
 layout_mode = 2
 text = "TRYPOPHOBIA 👾💣👁️"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CenterContainer" type="CenterContainer" parent="UIPanelContainer/VBoxContainer"]
+[node name="CenterContainer" type="CenterContainer" parent="UIPanelContainer/VBoxContainer" unique_id=1676837557]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UIPanelContainer/VBoxContainer/CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UIPanelContainer/VBoxContainer/CenterContainer" unique_id=1924528216]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ResumeButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="ResumeButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer" unique_id=1180359538]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 text = "Resume Game"
 
-[node name="PlayBotButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="PlayBotButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer" unique_id=1819519421]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Play Bot"
 
-[node name="PlayFriendButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="PlayFriendButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer" unique_id=1482747376]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Pass & Play"
 
-[node name="HR1" type="HSeparator" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="HR1" type="HSeparator" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer" unique_id=103261536]
 layout_mode = 2
 
-[node name="InfoButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="InfoButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer" unique_id=601306595]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Tutorial"
 
-[node name="SettingsButton" type="OptionButton" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="SettingsButton" type="OptionButton" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer" unique_id=29031471]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
@@ -194,18 +194,18 @@ popup/item_0/id = 0
 popup/item_1/text = "Easy Mode"
 popup/item_1/id = 1
 
-[node name="HR2" type="HSeparator" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="HR2" type="HSeparator" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer" unique_id=855588458]
 layout_mode = 2
 
-[node name="QuitButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="QuitButton" type="Button" parent="UIPanelContainer/VBoxContainer/CenterContainer/VBoxContainer" unique_id=2108859024]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Quit"
 
-[node name="InfoContainer" type="ScrollContainer" parent="UIPanelContainer"]
+[node name="InfoContainer" type="ScrollContainer" parent="UIPanelContainer" unique_id=1934805134]
 layout_mode = 2
 
-[node name="InfoLabel" type="RichTextLabel" parent="UIPanelContainer/InfoContainer"]
+[node name="InfoLabel" type="RichTextLabel" parent="UIPanelContainer/InfoContainer" unique_id=353974959]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
