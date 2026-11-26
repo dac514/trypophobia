@@ -1,14 +1,9 @@
 extends Node2D
 
-const CHIP_X_MIN = 398
-const CHIP_X_MAX = 882
-const CHIP_Y_MIN = 0
-const CHIP_Y_MAX = 96
-
-const DROP_X_MIN = 350
-const DROP_X_MAX = 930
-const DROP_Y_MIN = 0
-const DROP_Y_MAX = 720
+## Height of the strip above the board where the chip waits to be dropped
+const HOLD_STRIP_HEIGHT = 144.0
+## Shortest time the bot appears to think, so its moves never feel abrupt
+const BOT_MIN_THINK_SECONDS = 0.6
 
 var chip_inventory := {
 	1: {Globals.ChipType.EYE: 999, Globals.ChipType.PACMAN: 2, Globals.ChipType.BOMB: 1},
@@ -113,7 +108,7 @@ func _input(event: InputEvent) -> void:
 	@warning_ignore_restore("UNSAFE_PROPERTY_ACCESS")
 
 	if is_click and can_drop_chip(pos):
-		drop_chip(pos)
+		try_drop_chip(pos)
 
 
 func _trigger_button_press(b: Button) -> void:
@@ -165,15 +160,52 @@ func start_new_turn() -> void:
 		await make_bot_move()
 
 
+## Where the held chip can move: above the board, between the outer column centers (global)
+func hold_rect() -> Rect2:
+	var top_left := board.global_position + Vector2(Board.column_center_local_x(0), -Board.HALF_EXTENT - HOLD_STRIP_HEIGHT)
+	var size := Vector2(Board.column_center_local_x(Board.GRID_SIZE.x - 1) * 2.0, HOLD_STRIP_HEIGHT - Board.CELL_SIZE / 2.0)
+	return Rect2(top_left, size)
+
+
 ## Make the chip follow the cursor within bounds
 func follow_chip(pos: Vector2) -> void:
-	current_chip.global_position = Vector2(clamp(pos.x, CHIP_X_MIN, CHIP_X_MAX), clamp(pos.y, CHIP_Y_MIN, CHIP_Y_MAX))
+	var rect := hold_rect()
+	current_chip.global_position = pos.clamp(rect.position, rect.end)
 
 
-## Check if the position is within the drop area
+## Check if the position is within the drop area: over the board or the strip above it
 func can_drop_chip(pos: Vector2) -> bool:
-	var in_drop_area: bool = pos.x >= DROP_X_MIN and pos.x <= DROP_X_MAX and pos.y >= DROP_Y_MIN and pos.y <= DROP_Y_MAX
-	return in_drop_area
+	var top := board.global_position.y - Board.HALF_EXTENT - HOLD_STRIP_HEIGHT - Board.CELL_SIZE / 2.0
+	var bottom := board.global_position.y + Board.HALF_EXTENT
+	return absf(pos.x - board.global_position.x) <= Board.HALF_EXTENT + 2.0 and pos.y >= top and pos.y <= bottom
+
+
+## The column under the held chip, or -1
+func held_chip_column() -> int:
+	return Board.column_at_local_x(current_chip.global_position.x - board.global_position.x)
+
+
+## Drops the held chip into the column under it, or refuses when that column is full
+func try_drop_chip(pos: Vector2) -> void:
+	follow_chip(pos)
+	var column := held_chip_column()
+	if column == -1:
+		return
+	if board.is_column_full(column):
+		_refuse_drop(column)
+		return
+	# Snap to the column center so the chip drops cleanly between the walls
+	current_chip.global_position.x = board.global_position.x + Board.column_center_local_x(column)
+	drop_chip()
+
+
+## Shows that the column is full: the column flashes red and the chip shakes its head
+func _refuse_drop(column: int) -> void:
+	board.flash_column(column)
+	var x := current_chip.position.x
+	var shake := create_tween()
+	for offset: float in [-12.0, 12.0, -8.0, 8.0, 0.0]:
+		shake.tween_property(current_chip, "position:x", x + offset, 0.05)
 
 
 ## Update the player label with current turn and inventory
@@ -230,11 +262,10 @@ func game_over(player_id: int) -> void:
 		pause_screen.toggle()
 
 
-## Drop the current chip onto the board
-func drop_chip(pos: Vector2 = Vector2.ZERO) -> void:
+## Drop the current chip onto the board from where it is
+func drop_chip() -> void:
 	is_waiting_to_drop = false
-	if pos != Vector2.ZERO:
-		follow_chip(pos)
+	board.is_busy = true
 	current_chip.disable_physics(false)
 	chip_inventory[current_player_id][current_chip_type] -= 1
 	next_moves.stop_animation()
@@ -275,9 +306,7 @@ func spawn_chip() -> void:
 	else:
 		t_button.visible = true
 	# Set chip to center of drop area to avoid upper-left glitch
-	var center_x := (CHIP_X_MIN + CHIP_X_MAX) / 2.0
-	var center_y := (CHIP_Y_MIN + CHIP_Y_MAX) / 2.0
-	current_chip.global_position = Vector2(center_x, center_y)
+	current_chip.global_position = hold_rect().get_center()
 	# Fade in effect
 	current_chip.modulate.a = 0.0
 	var chip_tween := create_tween()
@@ -312,9 +341,10 @@ func toggle_chip_feature() -> void:
 func make_bot_move() -> void:
 	# Pause player control while bot is thinking
 	is_waiting_to_drop = false
-	var thinking_pos := Vector2((CHIP_X_MIN + CHIP_X_MAX) / 2.0, (CHIP_Y_MIN + CHIP_Y_MAX) / 2.0)
+	var thinking_pos := hold_rect().get_center()
 	follow_chip(thinking_pos)
 	# Calculate move
+	var think_started := Time.get_ticks_msec()
 	var bot := Bot.new()
 	add_child(bot)
 	bot.find_best_move(
@@ -323,6 +353,9 @@ func make_bot_move() -> void:
 	var move: BotMove = await bot.best_move
 	bot.worker.wait_to_finish()
 	bot.queue_free()
+	var thought := (Time.get_ticks_msec() - think_started) / 1000.0
+	if thought < BOT_MIN_THINK_SECONDS:
+		await get_tree().create_timer(BOT_MIN_THINK_SECONDS - thought).timeout
 	if move == null:
 		game_over(0)  # No column left: draw
 		return
@@ -343,10 +376,7 @@ func make_bot_move() -> void:
 
 	# Calculate drop position based on column
 	var column: int = move.column
-	var column_width: float = (DROP_X_MAX - DROP_X_MIN) / float(board.GRID_SIZE.x - 1)
-	var drop_x: float = DROP_X_MIN + (column * column_width)
-	var drop_y: float = DROP_Y_MIN + 100  # Drop near top of the drop area
-	var drop_position := Vector2(drop_x, drop_y)
+	var drop_position := Vector2(board.global_position.x + Board.column_center_local_x(column), hold_rect().end.y)
 	# Animate chip movement to drop position
 	follow_chip(thinking_pos)
 	var tween := create_tween()
@@ -354,4 +384,4 @@ func make_bot_move() -> void:
 	await tween.finished
 	# Execute the drop
 	print("Bot dropping %s chip at column %d" % [Globals.ChipType.keys()[move.chip_type], column])
-	drop_chip(drop_position)
+	drop_chip()

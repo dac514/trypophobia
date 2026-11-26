@@ -5,7 +5,14 @@ signal board_has_settled
 signal game_over(playerId: int)
 
 const GRID_SIZE: Vector2i = Vector2i(6, 6)
+## Size of one grid cell, in pixels
+const CELL_SIZE: float = 96.0
+## Half the width (and height) of the grid, in pixels; the Board node sits at the grid's center
+const HALF_EXTENT: float = CELL_SIZE * GRID_SIZE.x / 2.0
+
 var grid_state: Array
+## True from the moment a chip is dropped until the board has rotated and settled
+var is_busy: bool = false
 
 @onready var chip_positions: Node2D = %ChipPositions
 @onready var board_rotator: BoardRotator = %BoardRotator
@@ -20,9 +27,53 @@ func _ready() -> void:
 				if is_instance_valid(chip):
 					place_chip(chip)
 			_print_ascii_grid()
-			if not has_winning_line():
-				board_has_settled.emit()
+			is_busy = false
+			if has_winning_line():
+				return
+			if is_board_full():
+				game_over.emit(0)  # No column left and no line: a draw
+				return
+			board_has_settled.emit()
 	)
+
+
+## Column under a board-local x position, or -1 when it's outside the grid
+static func column_at_local_x(x: float) -> int:
+	if x < -HALF_EXTENT or x > HALF_EXTENT:
+		return -1
+	return clampi(floori((x + HALF_EXTENT) / CELL_SIZE), 0, GRID_SIZE.x - 1)
+
+
+## Board-local x position of a column's center
+static func column_center_local_x(column: int) -> float:
+	return -HALF_EXTENT + CELL_SIZE * (column + 0.5)
+
+
+## True when the column's top cell is taken, so no chip can be dropped into it
+func is_column_full(column: int) -> bool:
+	return grid_state[column][0] != null
+
+
+func is_board_full() -> bool:
+	for column in range(GRID_SIZE.x):
+		if not is_column_full(column):
+			return false
+	return true
+
+
+## Briefly tints a column red, to show a chip can't go there
+func flash_column(column: int) -> void:
+	var flash := ColorRect.new()
+	flash.color = Color(0.9, 0.15, 0.2, 0.0)
+	flash.size = Vector2(CELL_SIZE, CELL_SIZE * GRID_SIZE.y)
+	flash.position = Vector2(-HALF_EXTENT + CELL_SIZE * column, -HALF_EXTENT)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.z_index = 3
+	add_child(flash)
+	var tween := create_tween()
+	tween.tween_property(flash, "color:a", 0.35, 0.08)
+	tween.tween_property(flash, "color:a", 0.0, 0.35)
+	tween.tween_callback(flash.queue_free)
 
 
 ## Reset the logical grid
@@ -67,6 +118,10 @@ func place_chip(chip: Chip, pos: Node2D = null) -> void:
 	var parts := pos_name.split("_")
 	var row := int(parts[1])
 	var column := int(parts[2])
+	if grid_state[column][row] != null and grid_state[column][row] != chip:
+		# Never stack two chips in one cell; the physics shouldn't allow it, but be safe
+		push_warning("Board: cell %d,%d is already taken, ignoring %s" % [column, row, chip.name])
+		return
 	grid_state[column][row] = chip
 	chip.call_deferred("lock_into_place", pos)
 
