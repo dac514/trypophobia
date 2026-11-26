@@ -1,5 +1,6 @@
 {
-    "godotTools.editorPath.godot4": "c:\\Users\\dac51\\Godot\\Godot_v4.5.1-stable_win64.exe",
+    // Machine-specific: set "godotTools.editorPath.godot4" in your VSCode *user*
+    // settings (see DEVELOPMENT.md), not here, so this file works on any OS.
     "godotTools.lsp.headless": true,
     "editor.formatOnPaste": true,
     "editor.insertSpaces": false,
@@ -8,5 +9,9 @@
     },
     "github.copilot.nextEditSuggestions.enabled": true,
     "debug.console.collapseIdenticalLines": false,
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "files.eol": "\n",
+    "search.exclude": {
+        "addons/gut": true
+    }
 }

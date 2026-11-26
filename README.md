@@ -24,6 +24,10 @@ Choose "Play Bot" to play against the AI. Choose "Pass & Play" to play against a
 
 When it's your turn, click the column where you want to drop your eyeball.
 
+## Development
+
+Godot 4.8. Lint with `bash scripts/lint.sh`, test with `bash scripts/test.sh`, and check your setup with `bash scripts/doctor.sh`. See [DEVELOPMENT.md](DEVELOPMENT.md).
+
 ## Credits
 
 Game by Dac Chartrand
