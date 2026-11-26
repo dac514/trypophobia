@@ -11,12 +11,32 @@ static var global_cursor_position: Vector2
 
 var chip_watcher: ChipWatcher
 
+var _rim: ChipRim
+
 @abstract func get_type() -> Globals.ChipType
 
 @abstract func set_visual_rotation(angle: float) -> void
 
 
+## Updates the chip's look for its player and the "distinct player chips" setting
+func refresh_look() -> void:
+	if _rim:
+		_rim.refresh()
+
+
+## Hides the ownership ring, e.g. while the chip explodes or gets eaten
+func hide_rim() -> void:
+	if _rim:
+		_rim.queue_free()
+		_rim = null
+
+
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_READY:
+		# Runs after the chip's own _ready, so the ring is the last child and draws on top
+		_rim = ChipRim.new()
+		add_child(_rim)
+		Settings.changed.connect(_on_settings_changed)
 	if what == NOTIFICATION_PREDELETE:
 		chip_has_settled.emit(self)
 		if chip_watcher:
@@ -46,6 +66,11 @@ func lock_into_place(target_pos: Node2D) -> void:
 	global_position = target_pos.global_position
 	set_visual_rotation(0)  #
 	freeze = true
+
+
+func _on_settings_changed(key: String) -> void:
+	if key == Settings.DISTINCT_CHIPS:
+		refresh_look()
 
 
 func on_chips_settled(chips: Array) -> void:

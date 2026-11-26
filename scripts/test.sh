@@ -11,9 +11,10 @@ godot="$(find_godot)"
 path="$(godot_project_path "$godot")"
 echo "Using $("$godot" --version | tr -d '\r') ($godot)"
 
-# A fresh clone has no .godot/ cache yet; class_name lookups need an import first.
-if [[ ! -f .godot/global_script_class_cache.cfg ]]; then
-	echo "No .godot cache, importing project first..."
+# class_name lookups need an import first: a fresh clone has no .godot/ cache yet, and an
+# editor or language server (e.g. VS Code godot-tools) can rewrite the cache without GUT's classes.
+if ! grep -q '&"GutTest"' .godot/global_script_class_cache.cfg 2> /dev/null; then
+	echo "GUT classes missing from the .godot cache, importing project first..."
 	"$godot" --headless --path "$path" --import > /dev/null 2>&1 || true
 fi
 

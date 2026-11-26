@@ -3,6 +3,8 @@
 [ext_resource type="FontFile" uid="uid://vxbfcnef0pvq" path="res://assets/fonts/Rubik-Bold.ttf" id="1_yev5y"]
 [ext_resource type="PackedScene" uid="uid://3qigo43ka1i4" path="res://scenes/next_moves.tscn" id="2_gdt2y"]
 [ext_resource type="PackedScene" uid="uid://btg88hxye4yyn" path="res://scenes/chip_eye.tscn" id="3_wm3ai"]
+[ext_resource type="Texture2D" path="res://assets/gear1.png" id="4_gear1"]
+[ext_resource type="Texture2D" path="res://assets/gear2.png" id="5_gear2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tefeu"]
 content_margin_left = 20.0
@@ -128,38 +130,38 @@ horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="TButton" type="Button" parent="." unique_id=500550669]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -144.0
-offset_top = -99.0
-offset_right = -78.0
-offset_bottom = -28.0
-grow_horizontal = 0
-grow_vertical = 2
-scale = Vector2(1.5, 1.5)
+layout_mode = 0
+offset_left = 1138.0
+offset_top = 262.0
+offset_right = 1242.0
+offset_bottom = 366.0
 focus_mode = 0
+theme_override_font_sizes/font_size = 60
 text = "T"
 
 [node name="RButton" type="Button" parent="." unique_id=546241410]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -146.0
-offset_top = 28.0
-offset_right = -77.0
-offset_bottom = 99.0
-grow_horizontal = 0
-grow_vertical = 2
-scale = Vector2(1.5, 1.5)
+layout_mode = 0
+offset_left = 1138.0
+offset_top = 394.0
+offset_right = 1242.0
+offset_bottom = 498.0
 focus_mode = 0
+theme_override_font_sizes/font_size = 60
 text = "R"
+
+[node name="PauseButton" type="TextureButton" parent="." unique_id=1381904726]
+layout_mode = 0
+offset_left = 1204.0
+offset_top = 644.0
+offset_right = 1260.0
+offset_bottom = 700.0
+focus_mode = 0
+tooltip_text = "Menu"
+texture_normal = ExtResource("4_gear1")
+texture_pressed = ExtResource("5_gear2")
+texture_hover = ExtResource("5_gear2")
+ignore_texture_size = true
+stretch_mode = 3
 
 [node name="PlayerEye" parent="." unique_id=2040396870 instance=ExtResource("3_wm3ai")]
 position = Vector2(1184.229, 192.44067)

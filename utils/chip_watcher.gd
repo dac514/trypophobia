@@ -11,6 +11,7 @@ var _watched_objects: Array[Chip] = []
 var _settling_count: int = 0
 var _timeout: float = 3.0
 var _timer: Timer
+var _settled: Dictionary = {}
 
 
 ## Begins watching the given Chip objects for sleep state.
@@ -25,7 +26,7 @@ func watch(objects: Array[Chip], timeout: float = 3.0) -> void:
 
 	for obj in objects:
 		if is_instance_valid(obj) and obj.can_sleep:
-			obj.sleeping_state_changed.connect(_on_object_sleep.bind(obj), CONNECT_ONE_SHOT)
+			obj.sleeping_state_changed.connect(_on_object_sleep.bind(obj))
 			_watched_objects.append(obj)
 			_settling_count += 1
 
@@ -38,11 +39,15 @@ func watch(objects: Array[Chip], timeout: float = 3.0) -> void:
 	_timer.start()
 
 
+## Counts each object once, the first time it falls asleep. Waking up (which also emits
+## sleeping_state_changed, e.g. when physics is re-enabled) is ignored.
 func _on_object_sleep(obj: RigidBody2D) -> void:
-	if obj.is_sleeping:
-		_settling_count -= 1
-		if _settling_count <= 0:
-			_emit_and_cleanup()
+	if not obj.sleeping or _settled.has(obj):
+		return
+	_settled[obj] = true
+	_settling_count -= 1
+	if _settling_count <= 0:
+		_emit_and_cleanup()
 
 
 func _on_timeout() -> void:
@@ -63,4 +68,5 @@ func _cleanup() -> void:
 		if is_instance_valid(obj) and obj.sleeping_state_changed.is_connected(_on_object_sleep.bind(obj)):
 			obj.sleeping_state_changed.disconnect(_on_object_sleep.bind(obj))
 	_watched_objects.clear()
+	_settled.clear()
 	_settling_count = 0

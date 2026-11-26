@@ -25,12 +25,11 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = 1280.0
-offset_bottom = 720.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_egioa")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="Fireworks" type="ColorRect" parent="." unique_id=640637795]
 visible = false
@@ -52,3 +51,5 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("4_r7ipf")
+expand_mode = 1
+stretch_mode = 6

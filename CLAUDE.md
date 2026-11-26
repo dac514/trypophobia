@@ -11,6 +11,7 @@ All tooling is plain bash in `scripts/`. Run the scripts from the repo root. Und
 - `bash scripts/test.sh [GUT args]`: runs the GUT unit tests headless (`.gutconfig.json`, `test/unit/`). For example, `-gselect=test_bot_board -gunit_test_name=bomb`.
 - `bash scripts/doctor.sh`: read-only health check of the tools, Godot version and machine settings.
 - `bash scripts/update-gut.sh <tag>`: replaces `addons/gut` with a GUT release.
+- `bash scripts/android-symbols.sh [version]`: builds the Play Console native debug symbols zip in `exports/`. See DEVELOPMENT.md, "Android (Google Play)".
 
 The Godot binary is auto-detected from the version in `project.godot`; override it with `GODOT=/path/to/godot`.
 
@@ -31,17 +32,32 @@ The Godot binary is auto-detected from the version in `project.godot`; override 
 - **`scenes/board_rotator.gd`**: random board rotations with a weighted probability system.
 - **`scenes/chip.gd`**: the abstract chip base class, with `chip_eye.gd`, `chip_bomb.gd` and `chip_pacman.gd` as implementations. Chips are `RigidBody2D`. `utils/chip_watcher.gd` detects when physics has settled.
 - **`scenes/next_moves.gd`**: previews the next 3 rotations.
-- **`utils/globals.gd`**: the `ChipType` enum (EYE, BOMB, PACMAN) and the info text.
+- **`utils/globals.gd`**: the `ChipType` and `Difficulty` enums, `ROTATION_STATES` (the rotation odds, shared by the rotator and the bot) and the rules text.
+- **`utils/settings.gd`**: the `Settings` autoload, a `ConfigFile` in `user://settings.cfg` holding the a11y options, difficulty and tutorial state. It emits `changed(key)`.
+
+### Screens and layout
+- **`scenes/layout.gd`** (`Layout`): landscape (1280x720) or portrait (720x1280) by window shape, with stretch aspect `expand`. It places everything relative to the visible rect and the safe area, and defers while `Board.is_busy`.
+- **`scenes/pause_screen.gd`**: the menu. **`scenes/options_panel.gd`** builds the Options page in code; add settings there as rows.
+- **`scenes/chip_rim.gd`**: the player rim for "distinct player chips". **`scenes/tutorial.gd`** holds the interactive tutorial: lesson data, a spotlight shader and the coach card.
+- **`scenes/screenshot_tour.gd`**: `godot --path . --resolution 540x960 -- --screenshot-tour=<dir>` plays through the menu, a game, Options and the whole tutorial, and saves PNGs. Use it to check layout changes in both orientations.
 
 ### Special chips
 - BOMB destroys adjacent chips.
 - PACMAN destroys the chip it faces. R rotates its direction, and T toggles the special chip type.
 
 ### AI bot (`utils/bot/`)
-The bot is a minimax search with alpha-beta pruning, running on a separate thread.
-- **`bot_worker.gd`** (`BotWorker extends Thread`): runs the search with a 5-second limit and dynamic depth.
-- **`bot_board.gd`** (`BotBoard`): a lightweight int-grid simulation of the board (0 empty, 1/2 player IDs) covering moves, effects, rotation, gravity and evaluation. It has no nodes, so it is the main unit-test target (`test/unit/test_bot_board.gd`).
+The bot runs on a separate thread. Easy plays mostly random moves; Normal and Hard use a rotation-aware expectiminimax search.
+- **`bot_search.gd`** (`BotSearch`): pure, synchronous search. It uses negamax with alpha-beta and a transposition table at decision nodes, and iterative deepening on a wall-clock budget, always returning the last completed depth. Both players see the next 3 rotations, and one more is revealed after every turn. So after each ply a chance node, weighted by `Globals.ROTATION_STATES`, reveals the next rotation before the opponent decides. Chance nodes are only expanded when the search reaches the ply that uses that rotation. Wins score `WIN_SCORE + remaining depth`.
+- **`bot_worker.gd`** (`BotWorker extends Thread`): picks the difficulty settings: Hard is depth 6 within 2.5 s, Normal is depth 2 with noise. `choose_move()` runs synchronously for tests.
+- **`bot.gd`** (`Bot`): copies the grid, inventory and rotations into plain data on the main thread, then starts the worker.
+- **`bot_board.gd`** (`BotBoard`): a lightweight simulation of the board covering moves, effects, rotation, gravity, turn outcomes and the heuristic.
+  - It stores the grid as a flat `PackedByteArray` (`cells`, index `col * 6 + row`).
+  - `current_board_permutation` is a `[col][row]` copy, for convenience.
 - **`bot_move.gd`** (`BotMove`): the column, the chip type and the pacman direction.
+- Tests:
+  - `test_bot_board.gd` and `test_bot_rules.gd` cover the board model.
+  - `test_bot_search.gd` holds the brute-force equivalence (helpers in `bot_search_helpers.gd`) and `test_bot_puzzles.gd` the rotation puzzles. They are the place to prove a search change still finds optimal moves.
+  - `test_bot_worker.gd` covers the difficulties.
 
 ### Debugging
 - `board.gd` provides `_print_ascii_grid()`, and `BotBoard` provides `print_ascii_grid()`.

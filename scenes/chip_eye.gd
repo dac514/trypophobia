@@ -5,7 +5,10 @@ signal animate_ghost_finished
 signal animate_explode_finished
 
 const EYE_BG = preload("res://assets/Googli-1-2x.png")
-const PUPIL_TEXTURES = {1: preload("res://assets/Googli-Black-2x.png"), 2: preload("res://assets/Googli-Green-2x.png")}
+const BLACK_PUPIL = preload("res://assets/Googli-Black-2x.png")
+const PUPIL_TEXTURES = {1: BLACK_PUPIL, 2: preload("res://assets/Googli-Green-2x.png")}
+## Pupils for the "distinct player chips" option: red for player 2 stands out from black (issue #7)
+const DISTINCT_PUPIL_TEXTURES = {1: BLACK_PUPIL, 2: preload("res://assets/Googli-Red-2x.png")}
 
 var current_jiggle := 0
 var max_jiggles := 12
@@ -42,10 +45,22 @@ func set_visual_rotation(angle: float) -> void:
 
 func update_texture() -> void:
 	eye.texture = EYE_BG
-	pupil.texture = PUPIL_TEXTURES[player_id]
+	pupil.texture = pupil_texture(player_id)
+	super.refresh_look()
+
+
+func refresh_look() -> void:
+	update_texture()
+
+
+## The pupil for a player, following the "distinct player chips" setting
+static func pupil_texture(for_player_id: int) -> Texture2D:
+	var textures: Dictionary = DISTINCT_PUPIL_TEXTURES if Settings.distinct_chips else PUPIL_TEXTURES
+	return textures[for_player_id]
 
 
 func animate_explode() -> void:
+	hide_rim()
 	eye.visible = false
 	pupil.visible = false
 	var explode_anim: AnimatedSprite2D = get_node("ExplosionAnim")
@@ -55,6 +70,7 @@ func animate_explode() -> void:
 
 
 func animate_ghost() -> void:
+	hide_rim()
 	eye.visible = false
 	pupil.visible = false
 	var ghost_anim: AnimatedSprite2D = get_node("GhostAnim")
