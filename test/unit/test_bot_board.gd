@@ -78,7 +78,7 @@ func test_three_in_a_row_does_not_win() -> void:
 
 func test_line_broken_by_opponent_does_not_win() -> void:
 	var board := _board_with([Vector2i(0, BOTTOM), Vector2i(1, BOTTOM), Vector2i(3, BOTTOM), Vector2i(4, BOTTOM)])
-	board.current_board_permutation[2][BOTTOM] = 2
+	board.set_cell(2, BOTTOM, 2)
 	assert_false(board.has_winning_line(1))
 
 

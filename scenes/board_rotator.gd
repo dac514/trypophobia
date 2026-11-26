@@ -7,13 +7,7 @@ enum RotationDirection { LEFT = -1, RIGHT = 1 }
 enum RotationAmount { DEG_90 = 90, DEG_180 = 180 }
 
 var chip_watcher: ChipWatcher
-var possible_rotation_states: Array[Dictionary] = [
-	{"direction": RotationDirection.RIGHT, "degrees": RotationAmount.DEG_90, "weight": 1},
-	{"direction": RotationDirection.LEFT, "degrees": RotationAmount.DEG_90, "weight": 1},
-	{"direction": RotationDirection.RIGHT, "degrees": RotationAmount.DEG_180, "weight": 2},
-	{"direction": RotationDirection.LEFT, "degrees": RotationAmount.DEG_180, "weight": 2},
-	{"direction": 0, "degrees": 0, "weight": 4},
-]
+var possible_rotation_states: Array[Dictionary] = Globals.ROTATION_STATES
 var next_rotation_states: Array[Dictionary] = []
 
 var _chips_in_progress: Array[Chip] = []

@@ -2,6 +2,18 @@
 class_name Globals
 
 enum ChipType { EYE, BOMB, PACMAN }
+enum Difficulty { EASY, NORMAL, HARD }
+
+## Every rotation the board can make after a turn, with its relative probability weight.
+## Shared by BoardRotator (to pick rotations) and the bot (to reason about unknown ones).
+## Direction: 1 = clockwise (right), -1 = counter-clockwise (left), 0 = none.
+const ROTATION_STATES: Array[Dictionary] = [
+	{"direction": 1, "degrees": 90, "weight": 1},
+	{"direction": -1, "degrees": 90, "weight": 1},
+	{"direction": 1, "degrees": 180, "weight": 2},
+	{"direction": -1, "degrees": 180, "weight": 2},
+	{"direction": 0, "degrees": 0, "weight": 4},
+]
 
 # gdlint: disable=max-line-length
 static var game_info := """

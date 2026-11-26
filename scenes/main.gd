@@ -318,11 +318,14 @@ func make_bot_move() -> void:
 	var bot := Bot.new()
 	add_child(bot)
 	bot.find_best_move(
-		board.grid_state, current_player_id, chip_inventory, board.board_rotator.next_rotation_states, pause_screen.is_bot_dumb
+		board.grid_state, current_player_id, chip_inventory, board.board_rotator.next_rotation_states, pause_screen.difficulty
 	)
 	var move: BotMove = await bot.best_move
 	bot.worker.wait_to_finish()
 	bot.queue_free()
+	if move == null:
+		game_over(0)  # No column left: draw
+		return
 	# Update chip type if different from current
 	if current_chip_type != move.chip_type:
 		current_chip_type = move.chip_type

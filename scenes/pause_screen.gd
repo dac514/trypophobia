@@ -11,7 +11,7 @@ extends Control
 @export_range(0.1, 10.0, 0.01, "or_greater") var animation_duration := 2.3
 
 var game_in_progress := false
-var is_bot_dumb: bool = false
+var difficulty: Globals.Difficulty = Globals.Difficulty.HARD
 var _tween: Tween
 var _is_currently_opening := false
 
@@ -35,6 +35,7 @@ func _ready() -> void:
 	quit_button.pressed.connect(get_tree().quit)
 	info_button.pressed.connect(show_info)
 	resume_button.pressed.connect(func() -> void: toggle())
+	_setup_difficulty_button()
 	settings_button.item_selected.connect(_on_settings_button_item_selected)
 	info_label.meta_clicked.connect(_on_meta_clicked)
 	menu_opened_amount = 0.0
@@ -114,5 +115,14 @@ func _on_meta_clicked(meta: Variant) -> void:
 		OS.shell_open(meta)
 
 
+## Fills the difficulty dropdown; item ids are Globals.Difficulty values
+func _setup_difficulty_button() -> void:
+	settings_button.clear()
+	settings_button.add_item("Easy Bot", Globals.Difficulty.EASY)
+	settings_button.add_item("Normal Bot", Globals.Difficulty.NORMAL)
+	settings_button.add_item("Hard Bot", Globals.Difficulty.HARD)
+	settings_button.select(settings_button.get_item_index(difficulty))
+
+
 func _on_settings_button_item_selected(index: int) -> void:
-	is_bot_dumb = settings_button.get_item_id(index) == 1
+	difficulty = settings_button.get_item_id(index) as Globals.Difficulty
