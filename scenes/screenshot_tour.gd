@@ -61,7 +61,20 @@ func _run() -> void:
 
 ## More screens to capture, added as features land
 func _extra_steps() -> Array[Callable]:
-	return [_capture_distinct_chips_and_options, _play_tutorial]
+	return [_capture_distinct_chips_and_options, _play_bot_turns, _play_tutorial]
+
+
+## A real game against the (threaded) bot: it must answer each move
+func _play_bot_turns() -> void:
+	_main.set("is_against_bot", true)
+	_main.call("start_new_game")
+	for column: int in [2, 3]:
+		await _drop(column)
+		var started := Time.get_ticks_msec()
+		await _wait_until(func() -> bool: return int(_main.get("current_player_id")) == 1 and bool(_main.get("is_waiting_to_drop")), 30.0)
+		print("ScreenshotTour: bot answered in %d ms" % (Time.get_ticks_msec() - started))
+	await _wait(0.5)
+	await _capture("bot_game")
 
 
 ## Plays the whole tutorial the way a player would, capturing each lesson

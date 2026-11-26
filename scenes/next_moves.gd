@@ -17,6 +17,8 @@ var _slide_tween: Tween
 func draw_next_moves(board: Board, is_bot: bool) -> void:
 	_draw_generation += 1
 	var generation := _draw_generation
+	# Stop the hint animation first: it would keep touching the icons this redraw replaces
+	stop_animation()
 	if _slide_tween:
 		_slide_tween.kill()
 	var next_rotation_states := board.board_rotator.next_rotation_states.duplicate()

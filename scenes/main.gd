@@ -438,6 +438,10 @@ func make_bot_move() -> void:
 	follow_chip(thinking_pos)
 	# Calculate move
 	var think_started := Time.get_ticks_msec()
+	# The turn indicator breathes while the bot thinks, so a long think never looks frozen
+	var thinking := create_tween().set_loops()
+	thinking.tween_property(player_eye, "scale", Vector2.ONE * 1.1, 0.45).set_trans(Tween.TRANS_SINE)
+	thinking.tween_property(player_eye, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_SINE)
 	var bot := Bot.new()
 	add_child(bot)
 	bot.find_best_move(
@@ -449,6 +453,8 @@ func make_bot_move() -> void:
 	var thought := (Time.get_ticks_msec() - think_started) / 1000.0
 	if thought < BOT_MIN_THINK_SECONDS:
 		await get_tree().create_timer(BOT_MIN_THINK_SECONDS - thought).timeout
+	thinking.kill()
+	player_eye.scale = Vector2.ONE
 	if move == null:
 		game_over(0)  # No column left: draw
 		return
