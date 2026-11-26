@@ -45,6 +45,8 @@ var _skip_button: Button
 var _header: HBoxContainer
 var _button_row: HBoxContainer
 var _holes: Array[Rect2] = [Rect2(), Rect2()]
+## Where the spotlight currently points (canvas coordinates), so the card can stay clear of it
+var _spotlight_rects: Array[Rect2] = []
 var _hole_tween: Tween
 
 
@@ -341,26 +343,32 @@ func _refresh_placement() -> void:
 		rects.append(_target_rect(target).grow(SPOTLIGHT_PADDING))
 	_move_spotlight(rects)
 
-	var visible_rect := get_viewport().get_visible_rect()
+	_spotlight_rects = rects
 	var portrait := _main.layout.is_portrait
-	var width := Board.HALF_EXTENT * 2.0 if portrait else CARD_WIDTH_LANDSCAPE
 	_arrange_buttons(portrait)
-	_card.custom_minimum_size = Vector2(width, 0.0)
+	_card.custom_minimum_size = Vector2(Board.HALF_EXTENT * 2.0 if portrait else CARD_WIDTH_LANDSCAPE, 0.0)
+	_fit_card()
+
+
+## Shrinks the card to its content and places it. Wrapped text only knows its height once it
+## has been laid out at the card's width (which can be a frame later, or later still while the
+## overlay is hidden behind the menu), so this also runs whenever the content's size changes.
+func _fit_card() -> void:
+	if not is_inside_tree():
+		return
 	_card.reset_size()
-	# Wrapped text only knows its height once laid out at the new width
-	await get_tree().process_frame
-	_card.reset_size()
-	if not portrait:
+	var visible_rect := get_viewport().get_visible_rect()
+	if not _main.layout.is_portrait:
 		_card.position = visible_rect.position + Vector2(CARD_MARGIN, 150.0)
 		return
 	# At the top, unless the spotlight is only up there (the rotation preview)
-	var spotlight_on_top := not rects.is_empty()
-	for rect in rects:
+	var spotlight_on_top := not _spotlight_rects.is_empty()
+	for rect in _spotlight_rects:
 		spotlight_on_top = spotlight_on_top and rect.end.y < visible_rect.size.y * 0.3
 	var y := visible_rect.position.y + 16.0
 	if spotlight_on_top:
 		y = visible_rect.end.y - CARD_MARGIN - 100.0 - _card.size.y
-	_card.position = Vector2(visible_rect.get_center().x - width / 2.0, y)
+	_card.position = Vector2(visible_rect.get_center().x - _card.size.x / 2.0, y)
 
 
 func _target_rect(target: String) -> Rect2:
@@ -429,6 +437,9 @@ func _build_overlay() -> void:
 	style.shadow_size = 7
 	_card.add_theme_stylebox_override("panel", style)
 	add_child(_card)
+	# Re-fit whenever the text's real size becomes known, and when the overlay reappears
+	_card.minimum_size_changed.connect(_fit_card, CONNECT_DEFERRED)
+	visibility_changed.connect(_fit_card, CONNECT_DEFERRED)
 
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 10)

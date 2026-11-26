@@ -188,8 +188,17 @@ func _play_bot_turns() -> void:
 
 ## Plays the whole tutorial the way a player would, capturing each lesson
 func _play_tutorial() -> void:
-	_main.call("start_tutorial")
-	await _wait(1.0)
+	# Start it the way a player does: open the menu, look at Options, go back, press Tutorial
+	var pause_screen: PauseScreen = _main.get("pause_screen")
+	if not pause_screen.visible:
+		pause_screen.toggle()
+		await _wait(1.0)
+	pause_screen.show_options()
+	await _wait(0.5)
+	pause_screen.show_menu()
+	await _wait(0.5)
+	pause_screen.info_button.pressed.emit()
+	await _wait(1.5)
 	var tutorial: Tutorial = _main.get("tutorial")
 	await _capture("tutorial_1_welcome")
 	tutorial.call("_on_next_pressed")
