@@ -20,6 +20,9 @@ var _tween: Tween
 var _is_currently_opening := false
 ## Whether "< Back" on the rules page returns to Options (rather than the main menu)
 var _info_opened_from_options := false
+## "New here?" hint and button glow, shown until the tutorial has been played or skipped
+var _tutorial_hint: Label
+var _tutorial_pulse: Tween
 
 @onready var blur_color_rect: ColorRect = $BlurColorRect
 @onready var info_button: Button = %InfoButton
@@ -67,25 +70,30 @@ func _ready() -> void:
 func _invite_new_players_to_the_tutorial() -> void:
 	if Settings.tutorial_completed:
 		return
-	var hint := Label.new()
-	hint.text = "New here? Start with the tutorial!"
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.add_theme_font_size_override("font_size", 17)
-	hint.add_theme_color_override("font_color", Color("dba8ea"))
+	_tutorial_hint = Label.new()
+	_tutorial_hint.text = "New here? Start with the tutorial!"
+	_tutorial_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tutorial_hint.add_theme_font_size_override("font_size", 17)
+	_tutorial_hint.add_theme_color_override("font_color", Color("dba8ea"))
 	var list := info_button.get_parent()
-	list.add_child(hint)
-	list.move_child(hint, info_button.get_index())
+	list.add_child(_tutorial_hint)
+	list.move_child(_tutorial_hint, info_button.get_index())
 	# A slow glow on the button
-	var pulse := create_tween().set_loops()
-	pulse.tween_property(info_button, "self_modulate", Color(1.25, 1.0, 1.35), 0.9).set_trans(Tween.TRANS_SINE)
-	pulse.tween_property(info_button, "self_modulate", Color.WHITE, 0.9).set_trans(Tween.TRANS_SINE)
-	Settings.changed.connect(
-		func(key: String) -> void:
-			if key == Settings.TUTORIAL_COMPLETED and Settings.tutorial_completed and is_instance_valid(hint):
-				hint.queue_free()
-				pulse.kill()
-				info_button.self_modulate = Color.WHITE
-	)
+	_tutorial_pulse = create_tween().set_loops()
+	_tutorial_pulse.tween_property(info_button, "self_modulate", Color(1.25, 1.0, 1.35), 0.9).set_trans(Tween.TRANS_SINE)
+	_tutorial_pulse.tween_property(info_button, "self_modulate", Color.WHITE, 0.9).set_trans(Tween.TRANS_SINE)
+	Settings.changed.connect(_on_settings_changed_while_inviting)
+
+
+## Stops inviting once the tutorial is done, and stops listening (the hint is gone by then)
+func _on_settings_changed_while_inviting(key: String) -> void:
+	if key != Settings.TUTORIAL_COMPLETED or not Settings.tutorial_completed:
+		return
+	Settings.changed.disconnect(_on_settings_changed_while_inviting)
+	if is_instance_valid(_tutorial_hint):
+		_tutorial_hint.queue_free()
+	_tutorial_pulse.kill()
+	info_button.self_modulate = Color.WHITE
 
 
 func _input(event: InputEvent) -> void:
