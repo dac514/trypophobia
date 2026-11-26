@@ -48,7 +48,7 @@ The bot runs on a separate thread. Easy plays mostly random moves; Normal and Ha
 - **`bot_move.gd`** (`BotMove`): the column, the chip type and the pacman direction.
 - Tests:
   - `test_bot_board.gd` and `test_bot_rules.gd` cover the board model.
-  - `test_bot_search.gd` holds the brute-force equivalence and rotation puzzles; it is the place to prove a search change still finds optimal moves.
+  - `test_bot_search.gd` holds the brute-force equivalence (helpers in `bot_search_helpers.gd`) and `test_bot_puzzles.gd` the rotation puzzles. They are the place to prove a search change still finds optimal moves.
   - `test_bot_worker.gd` covers the difficulties.
 
 ### Debugging
