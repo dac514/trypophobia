@@ -9,6 +9,8 @@ const GRID_SIZE: Vector2i = Vector2i(6, 6)
 const CELL_SIZE: float = 96.0
 ## Half the width (and height) of the grid, in pixels; the Board node sits at the grid's center
 const HALF_EXTENT: float = CELL_SIZE * GRID_SIZE.x / 2.0
+## Height of the strip above the board where the chip waits to be dropped
+const HOLD_STRIP_HEIGHT: float = 144.0
 
 var grid_state: Array
 ## True from the moment a chip is dropped until the board has rotated and settled

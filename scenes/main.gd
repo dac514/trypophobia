@@ -1,7 +1,6 @@
+class_name Main
 extends Node2D
 
-## Height of the strip above the board where the chip waits to be dropped
-const HOLD_STRIP_HEIGHT = 144.0
 ## Shortest time the bot appears to think, so its moves never feel abrupt
 const BOT_MIN_THINK_SECONDS = 0.6
 
@@ -16,6 +15,7 @@ var current_turn: int = 0
 var is_against_bot: bool = false
 var is_mobile_device: bool = false
 var is_waiting_to_drop: bool = false
+var layout: Layout
 
 @onready var board: Board = $Board
 
@@ -25,6 +25,7 @@ var is_waiting_to_drop: bool = false
 @onready var play_friend_button: Button = %PauseScreen/%PlayFriendButton
 @onready var player_eye: ChipEye = %UI/PlayerEye
 @onready var player_label: RichTextLabel = %UI/PlayerLabel
+@onready var pause_button: TextureButton = %UI/PauseButton
 @onready var r_button: Button = %UI/RButton
 @onready var t_button: Button = %UI/TButton
 
@@ -36,6 +37,14 @@ var is_waiting_to_drop: bool = false
 func _ready() -> void:
 	_is_mobile_device()
 	_connect_board()
+	layout = Layout.new(self)
+	layout.layout_applied.connect(_on_layout_applied)
+	add_child(layout)
+	pause_button.pressed.connect(
+		func() -> void:
+			if pause_screen.game_in_progress and not pause_screen.visible:
+				pause_screen.toggle()
+	)
 	t_button.pressed.connect(
 		func() -> void:
 			if is_waiting_to_drop:
@@ -58,6 +67,15 @@ func _ready() -> void:
 	)
 	if not pause_screen.visible:
 		pause_screen.toggle()
+	var tour_directory := ScreenshotTour.requested_directory()
+	if tour_directory != "":
+		add_child(ScreenshotTour.new(self, tour_directory))
+
+
+## Keeps the chip waiting to be dropped above the board after the board moved
+func _on_layout_applied() -> void:
+	if current_chip and is_instance_valid(current_chip) and current_chip.freeze and not board.is_busy:
+		current_chip.global_position = hold_rect().get_center()
 
 
 func _is_mobile_device() -> void:
@@ -162,8 +180,8 @@ func start_new_turn() -> void:
 
 ## Where the held chip can move: above the board, between the outer column centers (global)
 func hold_rect() -> Rect2:
-	var top_left := board.global_position + Vector2(Board.column_center_local_x(0), -Board.HALF_EXTENT - HOLD_STRIP_HEIGHT)
-	var size := Vector2(Board.column_center_local_x(Board.GRID_SIZE.x - 1) * 2.0, HOLD_STRIP_HEIGHT - Board.CELL_SIZE / 2.0)
+	var top_left := board.global_position + Vector2(Board.column_center_local_x(0), -Board.HALF_EXTENT - Board.HOLD_STRIP_HEIGHT)
+	var size := Vector2(Board.column_center_local_x(Board.GRID_SIZE.x - 1) * 2.0, Board.HOLD_STRIP_HEIGHT - Board.CELL_SIZE / 2.0)
 	return Rect2(top_left, size)
 
 
@@ -175,7 +193,7 @@ func follow_chip(pos: Vector2) -> void:
 
 ## Check if the position is within the drop area: over the board or the strip above it
 func can_drop_chip(pos: Vector2) -> bool:
-	var top := board.global_position.y - Board.HALF_EXTENT - HOLD_STRIP_HEIGHT - Board.CELL_SIZE / 2.0
+	var top := board.global_position.y - Board.HALF_EXTENT - Board.HOLD_STRIP_HEIGHT - Board.CELL_SIZE / 2.0
 	var bottom := board.global_position.y + Board.HALF_EXTENT
 	return absf(pos.x - board.global_position.x) <= Board.HALF_EXTENT + 2.0 and pos.y >= top and pos.y <= bottom
 
