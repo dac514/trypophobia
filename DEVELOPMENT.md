@@ -61,6 +61,33 @@ Set them in **Editor → Editor Settings**:
 addons/gut/*, test/*, .gutconfig.json
 ```
 
+### Android (Google Play)
+The Android preset builds an AAB with the Gradle build template in `android/` (gitignored, installed from the editor). These settings clear the Play Console warnings from issues #9 and #10.
+
+**Orientation and large screens (#9).**
+- `project.godot` sets `display/window/handheld/orientation` to Sensor. Godot exports that as `screenOrientation="fullUser"`, so Android 16's "remove orientation restrictions on large screens" warning no longer applies.
+- The game lays itself out for portrait or landscape (`scenes/layout.gd`).
+
+**Edge-to-edge (#9).**
+- Keep `screen/edge_to_edge=true`. The layout keeps everything inside `DisplayServer.get_display_safe_area()`, so notches and gesture bars don't cover the UI.
+- The "uses deprecated APIs for edge-to-edge" warning comes from Godot's own startup code. [godotengine/godot#111220](https://github.com/godotengine/godot/issues/111220) was closed with no code change; the maintainers' comments suggest the Play-side check changed.
+- If a fresh upload still shows the warning, comment on that issue.
+
+**Deobfuscation file (#10).**
+- Set `gradle_build/minification=true`. This needs Godot 4.8-dev7 or later and Use Gradle Build (godotengine/godot#123234).
+- Release exports then run R8, and the mapping file goes into the AAB, where Play picks it up.
+- If Play still asks for it, upload `android/build/build/outputs/mapping/standardRelease/mapping.txt`.
+- Test a release build on a device after turning this on.
+
+**Native debug symbols (#10).**
+- No Godot version puts these in the AAB, but Godot publishes them for every official template. Run:
+  ```
+  bash scripts/android-symbols.sh
+  ```
+  It downloads the symbols for the template in `android/.build_version` and keeps only the architectures the preset exports (the full zip is close to Play's 800 MB limit). It writes `exports/android-native-debug-symbols-<version>.zip`.
+- Upload that zip with each release: **App bundle explorer > your bundle > Downloads > Native debug symbols**.
+- Re-run the script whenever you upgrade Godot.
+
 ## Claude Code
 - [CLAUDE.md](CLAUDE.md) holds the project instructions.
 - `.claude/settings.json` holds the shared settings:

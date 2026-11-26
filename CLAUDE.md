@@ -11,6 +11,7 @@ All tooling is plain bash in `scripts/`. Run the scripts from the repo root. Und
 - `bash scripts/test.sh [GUT args]`: runs the GUT unit tests headless (`.gutconfig.json`, `test/unit/`). For example, `-gselect=test_bot_board -gunit_test_name=bomb`.
 - `bash scripts/doctor.sh`: read-only health check of the tools, Godot version and machine settings.
 - `bash scripts/update-gut.sh <tag>`: replaces `addons/gut` with a GUT release.
+- `bash scripts/android-symbols.sh [version]`: builds the Play Console native debug symbols zip in `exports/`. See DEVELOPMENT.md, "Android (Google Play)".
 
 The Godot binary is auto-detected from the version in `project.godot`; override it with `GODOT=/path/to/godot`.
 
