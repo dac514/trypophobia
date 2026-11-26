@@ -13,6 +13,8 @@ var _main: Node
 
 ## Returns the target directory if the tour was requested on the command line, else ""
 static func requested_directory() -> String:
+	if not OS.is_debug_build():
+		return ""  # Never in release exports
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with(ARG_PREFIX):
 			return arg.trim_prefix(ARG_PREFIX)
@@ -61,7 +63,114 @@ func _run() -> void:
 
 ## More screens to capture, added as features land
 func _extra_steps() -> Array[Callable]:
-	return [_capture_distinct_chips_and_options, _play_bot_turns, _play_tutorial]
+	return [
+		_capture_distinct_chips_and_options,
+		_play_bot_turns,
+		_check_full_column,
+		_check_full_board_draw,
+		_check_tutorial_during_bot_think,
+		_play_tutorial,
+	]
+
+
+func _check(ok: bool, what: String) -> void:
+	print("ScreenshotTour CHECK %s: %s" % ["PASS" if ok else "FAIL", what])
+
+
+func _no_rotations() -> Array[Dictionary]:
+	var none: Array[Dictionary] = []
+	for i in range(40):
+		none.append({"direction": 0, "degrees": 0})
+	return none
+
+
+## Six chips fill a column; a seventh must be refused (it used to land above the grid)
+func _check_full_column() -> void:
+	var board: Board = _main.get("board")
+	_main.set("is_against_bot", false)
+	_main.call("start_new_game")
+	board.board_rotator.set_scripted_rotations(_no_rotations())
+	for i in range(6):
+		var started := Time.get_ticks_msec()
+		await _drop(0)
+		await _wait_until(func() -> bool: return bool(_main.get("is_waiting_to_drop")))
+		# A turn takes the drop plus the (here: no) rotation; settle timeouts would add 2-3 s
+		print("ScreenshotTour: turn %d took %d ms" % [i + 1, Time.get_ticks_msec() - started])
+	var column_count := func() -> int:
+		var count := 0
+		for chip: Variant in board.grid_state[0]:
+			if chip != null:
+				count += 1
+		return count
+	_check(column_count.call() == 6, "six chips fill column 0")
+	await _drop(0)
+	await _wait(2.0)
+	var held: Chip = _main.get("current_chip")
+	_check(column_count.call() == 6, "a 7th chip is refused (column still has 6)")
+	_check(bool(_main.get("is_waiting_to_drop")) and is_instance_valid(held) and held.freeze, "the 7th chip is still held")
+	await _capture("full_column")
+
+
+## A full board with no four in a row is a draw
+func _check_full_board_draw() -> void:
+	var board: Board = _main.get("board")
+	_main.set("is_against_bot", false)
+	_main.call("start_new_game")
+	board.board_rotator.set_scripted_rotations(_no_rotations())
+	# The same no-lines pattern the bot tests use, leaving one top cell open: pick a column where
+	# player 1's last chip doesn't make a line
+	var open_column := -1
+	var stacks := {}
+	for column in range(Board.GRID_SIZE.x):
+		var grid: Array = []
+		for col in range(Board.GRID_SIZE.x):
+			var cells: Array = []
+			for row in range(Board.GRID_SIZE.y):
+				cells.append(1 if (col + floori(row / 2.0)) % 2 == 0 else 2)
+			grid.append(cells)
+		grid[column][0] = 0
+		var trial := BotBoard.new()
+		trial.setup_from_ids(grid)
+		var after := trial.simulate_move(BotMove.new(Globals.ChipType.EYE, column), 1)
+		if not trial.has_winning_line(1) and not trial.has_winning_line(2) and after.outcome_for(1) == BotBoard.Outcome.DRAW:
+			open_column = column
+			for col in range(Board.GRID_SIZE.x):
+				var stack: Array = []
+				for row in range(Board.GRID_SIZE.y - 1, -1, -1):
+					if grid[col][row] != 0:
+						stack.append(grid[col][row])
+				stacks[col] = stack
+			break
+	_check(open_column >= 0, "found a full board without lines")
+	board.load_layout(stacks)
+	await _drop(open_column)
+	await _wait_until(func() -> bool: return not board.is_busy)
+	await _wait(3.0)
+	var label: RichTextLabel = _main.get("player_label")
+	_check(label.text.contains("tie"), "a full board without lines ends in a tie")
+	await _capture("full_board_draw")
+	await _wait(3.0)  # Let the game-over pause finish before the next step
+
+
+## Starting the tutorial while the bot thinks must not let the bot's move leak into lesson 1
+func _check_tutorial_during_bot_think() -> void:
+	_main.set("is_against_bot", true)
+	_main.call("start_new_game")
+	await _drop(2)
+	await _wait_until(func() -> bool: return int(_main.get("current_player_id")) == 2 and not bool(_main.get("is_waiting_to_drop")))
+	_main.call("start_tutorial")
+	await _wait(6.0)
+	var tutorial: Tutorial = _main.get("tutorial")
+	var board: Board = _main.get("board")
+	var stray := 0
+	for child in _main.get_children():
+		if child is Chip:
+			stray += 1
+	_check(is_instance_valid(tutorial) and int(tutorial.get("_index")) == 0, "tutorial still on lesson 1")
+	_check(stray == 0, "no stray chip from the abandoned bot turn")
+	_check(board.count_chips(1) + board.count_chips(2) == 7, "board shows exactly the lesson's 7 chips")
+	_main.call("finish_tutorial", false)
+	await _wait(1.0)
 
 
 ## A real game against the (threaded) bot: it must answer each move

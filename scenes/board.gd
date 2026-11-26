@@ -97,6 +97,9 @@ func reset_grid() -> void:
 
 ## Clear chips from the board
 func clear_chips() -> void:
+	# A rotation still in progress belongs to the game being cleared away
+	board_rotator.cancel()
+	is_busy = false
 	for pos_node in chip_positions.get_children():
 		for child in pos_node.get_children():
 			if child is Chip:

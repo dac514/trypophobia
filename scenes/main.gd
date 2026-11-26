@@ -19,6 +19,8 @@ var layout: Layout
 var tutorial: Tutorial = null
 ## Highest the waiting chip may go (set by Layout in portrait, so it stays clear of the preview)
 var hold_top_limit: float = -INF
+## Bumped whenever the board is reset; work still pending from an older game checks it and stops
+var _session := 0
 
 @onready var board: Board = $Board
 
@@ -216,6 +218,7 @@ func _end_tutorial() -> void:
 
 ## Empty board, fresh inventories, menu closed
 func _reset_game() -> void:
+	_session += 1
 	is_waiting_to_drop = false
 	# Reset chips
 	if is_instance_valid(current_chip):
@@ -349,7 +352,10 @@ func game_over(player_id: int) -> void:
 	player_eye.player_id = 1 if player_id == 1 else 2
 	player_eye.update_texture()
 
+	var session := _session
 	await get_tree().create_timer(5.0).timeout
+	if session != _session:
+		return
 	pause_screen.game_in_progress = false
 	if not pause_screen.visible:
 		pause_screen.toggle()
@@ -362,7 +368,10 @@ func drop_chip() -> void:
 	current_chip.disable_physics(false)
 	chip_inventory[current_player_id][current_chip_type] -= 1
 	next_moves.stop_animation()
+	var session := _session
 	await current_chip.chip_has_settled
+	if session != _session:
+		return  # A new game or the tutorial started meanwhile
 	if is_instance_valid(current_chip):
 		board.place_chip(current_chip)
 	board.rotate_and_settle.call_deferred()
@@ -438,6 +447,7 @@ func make_bot_move() -> void:
 	follow_chip(thinking_pos)
 	# Calculate move
 	var think_started := Time.get_ticks_msec()
+	var session := _session
 	# The turn indicator breathes while the bot thinks, so a long think never looks frozen
 	var thinking := create_tween().set_loops()
 	thinking.tween_property(player_eye, "scale", Vector2.ONE * 1.1, 0.45).set_trans(Tween.TRANS_SINE)
@@ -455,6 +465,8 @@ func make_bot_move() -> void:
 		await get_tree().create_timer(BOT_MIN_THINK_SECONDS - thought).timeout
 	thinking.kill()
 	player_eye.scale = Vector2.ONE
+	if session != _session:
+		return  # The game was left (new game or tutorial) while the bot was thinking
 	if move == null:
 		game_over(0)  # No column left: draw
 		return
@@ -481,6 +493,8 @@ func make_bot_move() -> void:
 	var tween := create_tween()
 	tween.tween_property(current_chip, "global_position", drop_position, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
+	if session != _session:
+		return
 	# Execute the drop
 	print("Bot dropping %s chip at column %d" % [Globals.ChipType.keys()[move.chip_type], column])
 	drop_chip()

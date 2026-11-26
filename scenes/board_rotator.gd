@@ -13,18 +13,25 @@ var next_rotation_states: Array[Dictionary] = []
 var _chips_in_progress: Array[Chip] = []
 ## Rotations to use (in order) before random ones, e.g. for the tutorial
 var _scripted_rotations: Array[Dictionary] = []
+## Bumped by cancel(): a rotation still in progress from before then finishes silently
+var _generation := 0
+var _rotation_tween: Tween
+var _shake_tween: Tween
+var _rest_position := Vector2.ZERO
 
 @onready var board_rotator: BoardRotator = %BoardRotator
 @onready var chip_positions: Node2D = %ChipPositions
 
 
 func _ready() -> void:
+	_rest_position = board_rotator.position
 	_prepare_rotation_states()
 	next_rotation_states.pop_front()
 
 
 ## Rotate the board and settle the chips
 func rotate_and_settle() -> void:
+	var generation := _generation
 	# Prepare the chips for rotation
 	_prepare_rotation_states()
 	_prepare_chips()
@@ -32,6 +39,8 @@ func rotate_and_settle() -> void:
 	# Disable physics so that when the board rotates, the chips don't colide with anything
 	_disable_physics(true)
 	await _rotate_board_animation(state.direction, state.degrees)
+	if generation != _generation:
+		return
 	# Let the chips fall
 	_disable_physics(false)
 	# Wait for the chips to stop falling
@@ -39,10 +48,10 @@ func rotate_and_settle() -> void:
 		chip_watcher = ChipWatcher.new()
 		add_child(chip_watcher)
 		chip_watcher.watch(_chips_in_progress, 2.0)
-		chip_watcher.all_objects_settled.connect(_on_chips_settled)
+		chip_watcher.all_objects_settled.connect(_on_chips_settled.bind(generation))
 	else:
 		await get_tree().create_timer(1.0).timeout
-		_on_chips_settled(_chips_in_progress)
+		_on_chips_settled(_chips_in_progress, generation)
 
 
 ## Makes the next rotations predictable: the first three are shown right away, the rest follow
@@ -104,7 +113,8 @@ func _rotate_board_animation(direction: int = RotationDirection.RIGHT, degrees: 
 	var rotation_speed := 0.4 / RotationAmount.DEG_90  # seconds per 90 degrees
 	var duration: float = rotation_speed * abs(degrees)
 	var target_rotation := board_rotator.rotation_degrees + direction * degrees
-	var rotation_tween := create_tween()
+	_rotation_tween = create_tween()
+	var rotation_tween := _rotation_tween
 	rotation_tween.tween_method(
 		func(angle: float) -> void:
 			board_rotator.rotation_degrees = angle
@@ -115,8 +125,9 @@ func _rotate_board_animation(direction: int = RotationDirection.RIGHT, degrees: 
 	)
 	await rotation_tween.finished
 	# Shake tween
-	var shake_tween := create_tween()
-	var original_pos := board_rotator.position
+	_shake_tween = create_tween()
+	var shake_tween := _shake_tween
+	var original_pos := _rest_position
 	shake_tween.tween_property(board_rotator, "position", original_pos + Vector2(-10, 0), 0.05)
 	shake_tween.tween_property(board_rotator, "position", original_pos + Vector2(10, 0), 0.05)
 	shake_tween.tween_property(board_rotator, "position", original_pos, 0.05)
@@ -132,8 +143,26 @@ func _update_chip_visuals() -> void:
 	_chips_in_progress = valid_chips
 
 
-func _on_chips_settled(chips: Array) -> void:
+func _on_chips_settled(chips: Array, generation: int) -> void:
+	if generation != _generation:
+		return  # Cancelled: the board has been cleared since
 	print("Board has settled or timeout reached.")
 	board_has_settled.emit(chips)
 	if chip_watcher:
 		chip_watcher.queue_free()
+
+
+## Abandons a rotation in progress (the board is being cleared for a new game or tutorial):
+## its animation stops, the board snaps to a clean angle, and it never reports settling.
+func cancel() -> void:
+	_generation += 1
+	if _rotation_tween:
+		_rotation_tween.kill()
+	if _shake_tween:
+		_shake_tween.kill()
+	if is_instance_valid(chip_watcher):
+		chip_watcher.queue_free()
+	chip_watcher = null
+	_chips_in_progress = []
+	board_rotator.rotation_degrees = roundf(board_rotator.rotation_degrees / 90.0) * 90.0
+	board_rotator.position = _rest_position
