@@ -61,7 +61,22 @@ func _run() -> void:
 
 ## More screens to capture, added as features land
 func _extra_steps() -> Array[Callable]:
-	return []
+	return [_capture_distinct_chips_and_options]
+
+
+func _capture_distinct_chips_and_options() -> void:
+	var original: bool = Settings.distinct_chips
+	Settings.distinct_chips = true
+	await _wait(0.4)
+	await _capture("game_distinct")
+	var pause_screen: PauseScreen = _main.get("pause_screen")
+	pause_screen.toggle()
+	await _wait(1.0)
+	await _capture("menu_in_game")
+	pause_screen.show_options()
+	await _wait(0.3)
+	await _capture("options")
+	Settings.distinct_chips = original
 
 
 func _drop(column: int) -> void:

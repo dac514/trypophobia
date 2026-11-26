@@ -45,6 +45,13 @@ func _ready() -> void:
 			if pause_screen.game_in_progress and not pause_screen.visible:
 				pause_screen.toggle()
 	)
+	player_label.bbcode_enabled = true  # Player names can be coloured
+	Settings.changed.connect(
+		func(key: String) -> void:
+			if key == Settings.DISTINCT_CHIPS and pause_screen.game_in_progress and current_turn > 0:
+				update_player_label(false)
+	)
+	pause_screen.tutorial_requested.connect(pause_screen.show_info)
 	t_button.pressed.connect(
 		func() -> void:
 			if is_waiting_to_drop:
@@ -226,22 +233,26 @@ func _refuse_drop(column: int) -> void:
 		shake.tween_property(current_chip, "position:x", x + offset, 0.05)
 
 
+## A player's name for the turn label; coloured like their chip rims with "distinct player chips"
+func player_name(player_id: int) -> String:
+	var name_text := "Player 1" if player_id == 1 else ("Bot" if is_against_bot else "Player 2")
+	if Settings.distinct_chips:
+		var color: Color = ChipRim.COLORS[player_id]
+		return "[color=#%s]%s[/color]" % [color.to_html(false), name_text]
+	return name_text
+
+
 ## Update the player label with current turn and inventory
 func update_player_label(animate: bool) -> void:
-	var player1_name := "Player 1"
-	var player2_name := "Player 2"
-	if is_against_bot:
-		player2_name = "Bot"
-
 	var current_chip_img := (
 		"👾" if current_chip_type == Globals.ChipType.PACMAN else "💣" if current_chip_type == Globals.ChipType.BOMB else "👁️"
 	)
-	var turn_text := "%s, Turn %d, Chip %s" % [player1_name if current_player_id == 1 else player2_name, current_turn, current_chip_img]
+	var turn_text := "%s, Turn %d, Chip %s" % [player_name(current_player_id), current_turn, current_chip_img]
 	var player1_text := (
-		"%s has %d 💣 and %d 👾" % [player1_name, chip_inventory[1][Globals.ChipType.BOMB], chip_inventory[1][Globals.ChipType.PACMAN]]
+		"%s has %d 💣 and %d 👾" % [player_name(1), chip_inventory[1][Globals.ChipType.BOMB], chip_inventory[1][Globals.ChipType.PACMAN]]
 	)
 	var player2_text := (
-		"%s has %d 💣 and %d 👾" % [player2_name, chip_inventory[2][Globals.ChipType.BOMB], chip_inventory[2][Globals.ChipType.PACMAN]]
+		"%s has %d 💣 and %d 👾" % [player_name(2), chip_inventory[2][Globals.ChipType.BOMB], chip_inventory[2][Globals.ChipType.PACMAN]]
 	)
 	var new_text := "%s\n%s\n%s" % [turn_text, player1_text, player2_text]
 
@@ -259,14 +270,9 @@ func update_player_label(animate: bool) -> void:
 
 ## Update the player label with current turn and inventory
 func game_over(player_id: int) -> void:
-	var player1_name := "Player 1"
-	var player2_name := "Player 2"
-	if is_against_bot:
-		player2_name = "Bot"
-
 	var new_text: String
 	if player_id:
-		new_text = ("GAME OVER \nThe winner is: " + (player1_name if player_id == 1 else player2_name) + " \n")
+		new_text = "GAME OVER \nThe winner is: " + player_name(player_id) + " \n"
 	else:
 		new_text = "GAME OVER \nIt's a tie! \n"
 
