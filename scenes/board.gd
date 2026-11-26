@@ -227,6 +227,11 @@ func _get_line(col: int, row: int, direction: Vector2i, player_id: int) -> Array
 
 
 # A helper function to highlight winning chips
+## Tints chips green, as for a winning line
+func highlight_chips(chips: Array) -> void:
+	_highlight_winning_chips(chips)
+
+
 func _highlight_winning_chips(chips: Array) -> void:
 	for chip: Chip in chips:
 		var tween := create_tween()

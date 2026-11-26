@@ -60,6 +60,32 @@ func _ready() -> void:
 			show_info()
 	)
 	ui_panel_container.add_child(options_panel)
+	_invite_new_players_to_the_tutorial()
+
+
+## Until the tutorial has been played (or skipped), point new players at it
+func _invite_new_players_to_the_tutorial() -> void:
+	if Settings.tutorial_completed:
+		return
+	var hint := Label.new()
+	hint.text = "New here? Start with the tutorial!"
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.add_theme_font_size_override("font_size", 17)
+	hint.add_theme_color_override("font_color", Color("dba8ea"))
+	var list := info_button.get_parent()
+	list.add_child(hint)
+	list.move_child(hint, info_button.get_index())
+	# A slow glow on the button
+	var pulse := create_tween().set_loops()
+	pulse.tween_property(info_button, "self_modulate", Color(1.25, 1.0, 1.35), 0.9).set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(info_button, "self_modulate", Color.WHITE, 0.9).set_trans(Tween.TRANS_SINE)
+	Settings.changed.connect(
+		func(key: String) -> void:
+			if key == Settings.TUTORIAL_COMPLETED and Settings.tutorial_completed and is_instance_valid(hint):
+				hint.queue_free()
+				pulse.kill()
+				info_button.self_modulate = Color.WHITE
+	)
 
 
 func _input(event: InputEvent) -> void:

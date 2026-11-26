@@ -21,17 +21,19 @@ static var game_info := """
 
 👁️ Get four eyeballs in a row to win.
 
-Wins are only counted after the rotation finishes. The board rotates randomly. The next 3 rotations are shown in the upper left.
+Wins are only counted after the rotation finishes. The board rotates randomly after every move. The next 3 rotations are always shown at the top of the screen; the one on the right happens next.
 
-Press T to toggle special chips.
+Press T (or tap the T button) to switch to a special chip.
 
 💣 Bombs destroy adjacent eyeballs.
 
-👾 Mushrooms destroy facing eyeballs. Press R to rotate.
+👾 Mushrooms destroy facing eyeballs. Press R (or tap the R button) to turn them.
 
-Choose "Play Bot" to play against the AI. Choose "Pass & Play" to play against a friend. The AI can take up to 5 seconds to make a move.
+Choose "Play Bot" to play against the AI (Easy, Normal or Hard). Choose "Pass & Play" to play against a friend. The AI takes a few seconds at most to make a move.
 
-When it's your turn, click the column where you want to drop your eyeball.
+When it's your turn, slide your finger (or move the mouse) along the top of the board and let go (or click) over the column where you want to drop your eyeball.
+
+New to the game? Choose Tutorial in the menu for a short interactive walkthrough.
 
 [b]Credits:[/b]
 

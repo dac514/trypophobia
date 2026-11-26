@@ -61,7 +61,56 @@ func _run() -> void:
 
 ## More screens to capture, added as features land
 func _extra_steps() -> Array[Callable]:
-	return [_capture_distinct_chips_and_options]
+	return [_capture_distinct_chips_and_options, _play_tutorial]
+
+
+## Plays the whole tutorial the way a player would, capturing each lesson
+func _play_tutorial() -> void:
+	_main.call("start_tutorial")
+	await _wait(1.0)
+	var tutorial: Tutorial = _main.get("tutorial")
+	await _capture("tutorial_1_welcome")
+	tutorial.call("_on_next_pressed")
+	await _wait(0.6)
+	await _capture("tutorial_2_drop")
+	await _drop(2)
+	await _wait_for_step(tutorial, 2)
+	await _wait(0.8)
+	await _capture("tutorial_3_preview")
+	tutorial.call("_on_next_pressed")
+	await _drop(3)
+	await _wait_for_step(tutorial, 4)
+	tutorial.call("_on_next_pressed")
+	await _wait(0.8)
+	await _capture("tutorial_6_puzzle")
+	await _drop(4)  # The winning column
+	await _wait_until(func() -> bool: return bool(tutorial.get("_showing_result")))
+	await _wait(1.0)
+	await _capture("tutorial_6_solved")
+	tutorial.call("_on_next_pressed")
+	await _wait(0.8)
+	await _capture("tutorial_7_bomb")
+	await _wait_until(func() -> bool: return bool(_main.get("is_waiting_to_drop")))
+	_main.call("toggle_chip_type")
+	await _wait(0.6)
+	await _capture("tutorial_7_bomb_selected")
+	await _drop(2)
+	await _wait_for_step(tutorial, 7)
+	await _wait_until(func() -> bool: return bool(_main.get("is_waiting_to_drop")))
+	_main.call("toggle_chip_type")
+	_main.call("toggle_chip_feature")  # Face down
+	await _wait(0.6)
+	await _capture("tutorial_8_mushroom")
+	await _drop(2)
+	await _wait_for_step(tutorial, 8)
+	await _wait(0.6)
+	await _capture("tutorial_9_done")
+
+
+func _wait_for_step(tutorial: Tutorial, index: int) -> void:
+	await _wait_until(func() -> bool: return int(tutorial.get("_index")) == index, 20.0)
+	if int(tutorial.get("_index")) != index:
+		push_error("ScreenshotTour: tutorial did not reach lesson %d (at %d)" % [index + 1, int(tutorial.get("_index")) + 1])
 
 
 func _capture_distinct_chips_and_options() -> void:

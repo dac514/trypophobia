@@ -16,6 +16,7 @@ var is_against_bot: bool = false
 var is_mobile_device: bool = false
 var is_waiting_to_drop: bool = false
 var layout: Layout
+var tutorial: Tutorial = null
 ## Highest the waiting chip may go (set by Layout in portrait, so it stays clear of the preview)
 var hold_top_limit: float = -INF
 
@@ -53,7 +54,7 @@ func _ready() -> void:
 			if key == Settings.DISTINCT_CHIPS and pause_screen.game_in_progress and current_turn > 0:
 				update_player_label(false)
 	)
-	pause_screen.tutorial_requested.connect(pause_screen.show_info)
+	pause_screen.tutorial_requested.connect(start_tutorial)
 	t_button.pressed.connect(
 		func() -> void:
 			if is_waiting_to_drop:
@@ -92,8 +93,20 @@ func _is_mobile_device() -> void:
 
 
 func _connect_board() -> void:
-	board.board_has_settled.connect(func() -> void: start_new_turn.call_deferred())
-	board.game_over.connect(func(player_id: int) -> void: game_over(player_id))
+	board.board_has_settled.connect(
+		func() -> void:
+			if tutorial:
+				tutorial.on_board_settled.call_deferred()
+			else:
+				start_new_turn.call_deferred()
+	)
+	board.game_over.connect(
+		func(player_id: int) -> void:
+			if tutorial:
+				tutorial.on_game_over(player_id)
+			else:
+				game_over(player_id)
+	)
 
 
 func _input(event: InputEvent) -> void:
@@ -134,6 +147,8 @@ func _input(event: InputEvent) -> void:
 
 	@warning_ignore_restore("UNSAFE_PROPERTY_ACCESS")
 
+	if tutorial and tutorial.covers(pos):
+		return  # A click on the tutorial's card, not on the board
 	if is_click and can_drop_chip(pos):
 		try_drop_chip(pos)
 
@@ -148,9 +163,62 @@ func _trigger_button_press(b: Button) -> void:
 
 
 func start_new_game() -> void:
+	_end_tutorial()
+	_reset_game()
+	# Start first turn
+	start_new_turn()
+
+
+## Starts the interactive tutorial (see Tutorial)
+func start_tutorial() -> void:
+	_end_tutorial()
+	is_against_bot = false
+	_reset_game()
+	player_label.text = "Tutorial"
+	player_eye.player_id = 1
+	player_eye.update_texture()
+	tutorial = Tutorial.new(self)
+	add_child(tutorial)
+
+
+## Called by the tutorial when it's done: play the bot, or go back to the menu
+func finish_tutorial(play_bot: bool) -> void:
+	Settings.tutorial_completed = true
+	if play_bot:
+		is_against_bot = true
+		start_new_game()
+		return
+	_end_tutorial()
+	_reset_game()
+	pause_screen.game_in_progress = false
+	if not pause_screen.visible:
+		pause_screen.toggle()
+
+
+## Gives player 1 a turn with the given chips (the tutorial has no opponent turns)
+func begin_tutorial_turn(inventory: Dictionary) -> void:
+	chip_inventory[1] = inventory.duplicate()
+	current_player_id = 2
+	start_new_turn()
+
+
+## Redraws the rotation preview, e.g. after the tutorial scripted new rotations
+func refresh_next_moves() -> void:
+	next_moves.draw_next_moves(board, false)
+
+
+func _end_tutorial() -> void:
+	if tutorial:
+		tutorial.queue_free()
+		tutorial = null
+		board.board_rotator.reset_rotations()
+
+
+## Empty board, fresh inventories, menu closed
+func _reset_game() -> void:
 	is_waiting_to_drop = false
 	# Reset chips
-	if current_chip:
+	if is_instance_valid(current_chip):
 		current_chip.queue_free()
 	current_chip = null
 	board.clear_chips()
@@ -165,12 +233,10 @@ func start_new_game() -> void:
 	# Hide backgrounds
 	fireworks_bg.visible = false
 	lotus_bg.visible = false
-	main_bg.visible = false
+	main_bg.visible = true
 	if pause_screen.visible:
 		pause_screen.toggle()
-	# Start first turn
 	pause_screen.game_in_progress = true
-	start_new_turn()
 
 
 ## Start a new turn, switch players, and spawn a new chip

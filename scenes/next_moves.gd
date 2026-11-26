@@ -9,9 +9,16 @@ const SLIDE_DISTANCE := 212.0
 
 var rotation_preview_tween: Tween
 var is_first_rotation: bool = true
+## Bumped on every redraw, so an older redraw still animating knows to stop
+var _draw_generation := 0
+var _slide_tween: Tween
 
 
 func draw_next_moves(board: Board, is_bot: bool) -> void:
+	_draw_generation += 1
+	var generation := _draw_generation
+	if _slide_tween:
+		_slide_tween.kill()
 	var next_rotation_states := board.board_rotator.next_rotation_states.duplicate()
 	next_rotation_states.reverse()
 
@@ -27,6 +34,8 @@ func draw_next_moves(board: Board, is_bot: bool) -> void:
 		for child in get_children():
 			fade_tween.tween_property(child, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN_OUT)
 		await fade_tween.finished
+		if generation != _draw_generation:
+			return
 		is_first_rotation = false
 
 	# Remove children from next_moves
@@ -43,6 +52,8 @@ func draw_next_moves(board: Board, is_bot: bool) -> void:
 
 	# Wait one frame for HBoxContainer to position all children
 	await get_tree().process_frame
+	if generation != _draw_generation:
+		return
 
 	last_child.pivot_offset = preserved_pivot_offset
 	last_child.rotation = preserved_rotation
@@ -54,6 +65,7 @@ func draw_next_moves(board: Board, is_bot: bool) -> void:
 
 	# Animate: slide all children to the right by SLIDE_DISTANCE
 	var assembly_line_tween := create_tween()
+	_slide_tween = assembly_line_tween
 	assembly_line_tween.set_parallel(true)
 	for child in get_children():
 		var tex_rect := child as TextureRect
@@ -69,10 +81,11 @@ func draw_next_moves(board: Board, is_bot: bool) -> void:
 	assembly_line_tween.tween_callback(
 		func() -> void:
 			# Remove the rightmost child
-			last_child.queue_free()
+			if is_instance_valid(last_child):
+				last_child.queue_free()
 			# Wait a frame for layout to stabilize
 			await get_tree().process_frame
-			if not is_bot:
+			if not is_bot and generation == _draw_generation:
 				# Start hint animation on the new rightmost item
 				var rightmost := get_child(get_child_count() - 1) as TextureRect
 				_animate_next_move(rightmost, next_rotation_states[next_rotation_states.size() - 1])

@@ -11,6 +11,8 @@ var possible_rotation_states: Array[Dictionary] = Globals.ROTATION_STATES
 var next_rotation_states: Array[Dictionary] = []
 
 var _chips_in_progress: Array[Chip] = []
+## Rotations to use (in order) before random ones, e.g. for the tutorial
+var _scripted_rotations: Array[Dictionary] = []
 
 @onready var board_rotator: BoardRotator = %BoardRotator
 @onready var chip_positions: Node2D = %ChipPositions
@@ -43,8 +45,27 @@ func rotate_and_settle() -> void:
 		_on_chips_settled(_chips_in_progress)
 
 
+## Makes the next rotations predictable: the first three are shown right away, the rest follow
+## in order, then random rotations resume
+func set_scripted_rotations(rotations: Array[Dictionary]) -> void:
+	next_rotation_states = rotations.slice(0, 3)
+	_scripted_rotations = rotations.slice(3)
+	_prepare_rotation_states()
+	next_rotation_states.resize(3)
+
+
+## Back to random rotations: drops any scripted ones and deals three fresh random rotations
+func reset_rotations() -> void:
+	_scripted_rotations.clear()
+	next_rotation_states.clear()
+	_prepare_rotation_states()
+	next_rotation_states.pop_front()
+
+
 # Prepare the next rotation states, uses probability weights
 func _prepare_rotation_states() -> void:
+	while next_rotation_states.size() < 4 and not _scripted_rotations.is_empty():
+		next_rotation_states.append(_scripted_rotations.pop_front())
 	while next_rotation_states.size() < 4:
 		var total_weight := 0
 		for state in possible_rotation_states:

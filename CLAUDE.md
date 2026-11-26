@@ -31,7 +31,14 @@ The Godot binary is auto-detected from the version in `project.godot`; override 
 - **`scenes/board_rotator.gd`**: random board rotations with a weighted probability system.
 - **`scenes/chip.gd`**: the abstract chip base class, with `chip_eye.gd`, `chip_bomb.gd` and `chip_pacman.gd` as implementations. Chips are `RigidBody2D`. `utils/chip_watcher.gd` detects when physics has settled.
 - **`scenes/next_moves.gd`**: previews the next 3 rotations.
-- **`utils/globals.gd`**: the `ChipType` enum (EYE, BOMB, PACMAN) and the info text.
+- **`utils/globals.gd`**: the `ChipType` and `Difficulty` enums, `ROTATION_STATES` (the rotation odds, shared by the rotator and the bot) and the rules text.
+- **`utils/settings.gd`**: the `Settings` autoload, a `ConfigFile` in `user://settings.cfg` holding the a11y options, difficulty and tutorial state. It emits `changed(key)`.
+
+### Screens and layout
+- **`scenes/layout.gd`** (`Layout`): landscape (1280x720) or portrait (720x1280) by window shape, with stretch aspect `expand`. It places everything relative to the visible rect and the safe area, and defers while `Board.is_busy`.
+- **`scenes/pause_screen.gd`**: the menu. **`scenes/options_panel.gd`** builds the Options page in code; add settings there as rows.
+- **`scenes/chip_rim.gd`**: the player rim for "distinct player chips". **`scenes/tutorial.gd`** holds the interactive tutorial: lesson data, a spotlight shader and the coach card.
+- **`scenes/screenshot_tour.gd`**: `godot --path . --resolution 540x960 -- --screenshot-tour=<dir>` plays through the menu, a game, Options and the whole tutorial, and saves PNGs. Use it to check layout changes in both orientations.
 
 ### Special chips
 - BOMB destroys adjacent chips.
