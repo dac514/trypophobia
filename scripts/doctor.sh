@@ -77,11 +77,17 @@ fi
 
 echo "Godot editor settings ($godot_cfg)"
 if [[ -f "$godot_cfg" ]]; then
-	check_setting() {
-		if grep -q "^$1 = true" "$godot_cfg"; then ok "$1"; else warn "$1 is not true ($2)"; fi
-	}
-	check_setting text_editor/external/use_external_editor "edit scripts in VSCode, avoids reload dialogs"
-	check_setting text_editor/behavior/files/auto_reload_scripts_on_external_change "reload .gd changed on disk silently"
+	# Godot omits settings that are at their default value, so a missing key means "default".
+	if grep -q "^text_editor/external/use_external_editor = true" "$godot_cfg"; then
+		ok "use_external_editor (scripts open in VSCode, no conflicting buffers)"
+	else
+		warn "Use External Editor is off: Godot's script editor will raise reload dialogs on external edits"
+	fi
+	if grep -q "^text_editor/behavior/files/auto_reload_scripts_on_external_change = false" "$godot_cfg"; then
+		warn "Auto Reload Scripts on External Change is off"
+	else
+		ok "auto_reload_scripts_on_external_change (default on)"
+	fi
 else
 	warn "not found (open Godot $ver once to create it)"
 fi

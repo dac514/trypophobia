@@ -51,7 +51,7 @@ Set them in **Editor → Editor Settings**:
 | Text Editor → External → Use External Editor | On | Godot opens scripts in VSCode, and its built-in script editor stops holding buffers that conflict with VSCode/Claude edits. |
 | Text Editor → External → Exec Path | path to `Code.exe` / `code` | |
 | Text Editor → External → Exec Flags | `{project} --goto {file}:{line}:{col}` | |
-| Text Editor → Behavior → Files → Auto Reload Scripts on External Change | On | Reloads `.gd` files changed on disk without a dialog. |
+| Text Editor → Behavior → Files → Auto Reload Scripts on External Change | On (the default in 4.8) | Reloads `.gd` files changed on disk without a dialog. |
 
 **Known limitation:** Godot has no setting that silently reloads `.tscn`/`.tres`/`project.godot` when they change on disk. It always asks. So edit scenes in the Godot editor, and don't edit those files externally while they're open. CLAUDE.md tells Claude the same.
 
