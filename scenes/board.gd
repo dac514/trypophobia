@@ -18,10 +18,18 @@ var is_busy: bool = false
 
 @onready var chip_positions: Node2D = %ChipPositions
 @onready var board_rotator: BoardRotator = %BoardRotator
+## The light that sweeps across the board (can be switched off in Options)
+@onready var shimmer: CanvasItem = $BoardRotator/Sprite2D/ColorRect
 
 
 func _ready() -> void:
 	reset_grid()
+	shimmer.visible = Settings.board_shimmer
+	Settings.changed.connect(
+		func(key: String) -> void:
+			if key == Settings.BOARD_SHIMMER:
+				shimmer.visible = Settings.board_shimmer
+	)
 	board_rotator.board_has_settled.connect(
 		func(chips: Array[Chip]) -> void:
 			reset_grid()
@@ -97,6 +105,31 @@ func clear_chips() -> void:
 		if node is Chip:
 			node.queue_free()
 	reset_grid()
+
+
+## Replaces the board with a preset position (used by the tutorial). Columns are listed
+## bottom-up, e.g. {0: [1, 2]} = player 1 at the bottom of column 0 with player 2 on top of it.
+func load_layout(stacks: Dictionary) -> void:
+	clear_chips()
+	for column: int in stacks:
+		var stack: Array = stacks[column]
+		for i in range(stack.size()):
+			var row := GRID_SIZE.y - 1 - i
+			var chip: Chip = preload("res://scenes/chip_eye.tscn").instantiate()
+			chip.player_id = stack[i]
+			chip.freeze = true
+			chip_positions.get_node("Pos_%d_%d" % [row, column]).add_child(chip)
+			grid_state[column][row] = chip
+
+
+## Number of a player's chips on the board
+func count_chips(player_id: int) -> int:
+	var count := 0
+	for column: Array in grid_state:
+		for chip: Variant in column:
+			if is_instance_valid(chip) and (chip as Chip).player_id == player_id:
+				count += 1
+	return count
 
 
 func find_nearest_pos(chip_to_check: Chip) -> Node2D:

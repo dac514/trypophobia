@@ -30,6 +30,8 @@ const BUTTON_GAP := 28.0
 const GEAR_SIZE := 84.0
 const GEAR_MARGIN := 3.0
 const FADE_SECONDS := 0.25
+## Smallest gap between the board (or the chip waiting above it) and its neighbours in portrait
+const HOLD_GAP := 8.0
 ## Where portrait mode centers its slice of the forest picture (0 = left edge, 1 = right edge)
 const PORTRAIT_FOREST_FOCUS := 0.84
 
@@ -136,6 +138,7 @@ func _safe_area(visible_rect: Rect2) -> Rect2:
 
 
 func _layout_landscape(area: Rect2) -> void:
+	_main.set("hold_top_limit", -INF)
 	# Board: centered, resting on the bottom edge (with the hold strip above it). On screens
 	# taller than 16:9 it moves up toward the middle instead of hugging the bottom.
 	var board_y := area.position.y + maxf(area.size.y - Board.HALF_EXTENT, area.size.y / 2.0 + 72.0)
@@ -183,11 +186,14 @@ func _layout_portrait(area: Rect2) -> void:
 	_place_button("TButton", Vector2(board_left, bar_y))
 	_place_button("RButton", Vector2(board_left + BUTTON_SIZE + BUTTON_GAP, bar_y))
 
-	# Middle: the hold strip and board, centered in the space left between top and bottom
-	var block := Board.HOLD_STRIP_HEIGHT + Board.HALF_EXTENT * 2.0
-	var free_space := bar_y - next_moves_bottom - block
-	var board_top := next_moves_bottom + maxf(free_space / 2.0, 0.0) + Board.HOLD_STRIP_HEIGHT
-	_board.position = Vector2(area.get_center().x, board_top + Board.HALF_EXTENT)
+	# Middle: the board, as close to the middle of the screen as the rotation preview (with the
+	# hold strip under it) and the chip buttons allow
+	var highest := next_moves_bottom + HOLD_GAP + Board.HOLD_STRIP_HEIGHT + Board.HALF_EXTENT
+	var lowest := bar_y - HOLD_GAP - Board.HALF_EXTENT
+	var board_y := clampf(area.get_center().y, highest, maxf(lowest, highest))
+	_board.position = Vector2(area.get_center().x, board_y)
+	# Keep the waiting chip from sliding up over the rotation preview
+	_main.set("hold_top_limit", next_moves_bottom + HOLD_GAP + Board.CELL_SIZE / 2.0)
 
 
 ## The forest background is a wide picture whose middle is mostly fog. Landscape shows all of it;

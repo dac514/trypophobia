@@ -16,6 +16,8 @@ var is_against_bot: bool = false
 var is_mobile_device: bool = false
 var is_waiting_to_drop: bool = false
 var layout: Layout
+## Highest the waiting chip may go (set by Layout in portrait, so it stays clear of the preview)
+var hold_top_limit: float = -INF
 
 @onready var board: Board = $Board
 
@@ -187,9 +189,10 @@ func start_new_turn() -> void:
 
 ## Where the held chip can move: above the board, between the outer column centers (global)
 func hold_rect() -> Rect2:
-	var top_left := board.global_position + Vector2(Board.column_center_local_x(0), -Board.HALF_EXTENT - Board.HOLD_STRIP_HEIGHT)
-	var size := Vector2(Board.column_center_local_x(Board.GRID_SIZE.x - 1) * 2.0, Board.HOLD_STRIP_HEIGHT - Board.CELL_SIZE / 2.0)
-	return Rect2(top_left, size)
+	var left := board.global_position.x + Board.column_center_local_x(0)
+	var bottom := board.global_position.y - Board.HALF_EXTENT - Board.CELL_SIZE / 2.0
+	var top := maxf(bottom - (Board.HOLD_STRIP_HEIGHT - Board.CELL_SIZE / 2.0), minf(hold_top_limit, bottom))
+	return Rect2(left, top, Board.column_center_local_x(Board.GRID_SIZE.x - 1) * 2.0, bottom - top)
 
 
 ## Make the chip follow the cursor within bounds

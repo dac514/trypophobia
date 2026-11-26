@@ -15,12 +15,13 @@ const SECTION_FONT_SIZE := 17
 const ROW_FONT_SIZE := 24
 const HINT_FONT_SIZE := 16
 const BUTTON_FONT_SIZE := 32
-const SECTION_GAP := 24
-const ROW_GAP := 12
+const SECTION_GAP := 18
+const ROW_GAP := 10
 const SECTION_COLOR := Color("dba8ea")
 const HINT_COLOR := Color(1.0, 1.0, 1.0, 0.7)
 
 var _distinct_toggle: CheckButton
+var _shimmer_toggle: CheckButton
 var _preview: ChipPairPreview
 
 
@@ -34,23 +35,18 @@ func _ready() -> void:
 	add_child(title)
 
 	var accessibility := _add_section("ACCESSIBILITY")
-	_distinct_toggle = CheckButton.new()
-	_distinct_toggle.text = "Distinct player chips"
-	_distinct_toggle.focus_mode = Control.FOCUS_NONE
-	_distinct_toggle.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
-	_distinct_toggle.button_pressed = Settings.distinct_chips
-	_distinct_toggle.toggled.connect(func(on: bool) -> void: Settings.distinct_chips = on)
+	_distinct_toggle = _make_toggle("Distinct player chips", Settings.DISTINCT_CHIPS)
 	accessibility.add_child(_distinct_toggle)
 	_preview = ChipPairPreview.new()
 	accessibility.add_child(_preview)
 	accessibility.add_child(_make_hint("Red pupils and coloured rims make each player's chips easy to tell apart."))
+	_shimmer_toggle = _make_toggle("Board shimmer", Settings.BOARD_SHIMMER)
+	accessibility.add_child(_shimmer_toggle)
+	accessibility.add_child(_make_hint("The light that sweeps across the board. Switch it off if it's distracting."))
 
 	var about := _add_section("ABOUT")
 	about.add_child(_make_button("Rules & Credits", rules_pressed.emit))
 
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	add_child(spacer)
 	add_child(_make_button("Back", back_pressed.emit))
 
 	Settings.changed.connect(_on_settings_changed)
@@ -60,6 +56,19 @@ func _on_settings_changed(key: String) -> void:
 	if key == Settings.DISTINCT_CHIPS:
 		_distinct_toggle.set_pressed_no_signal(Settings.distinct_chips)
 		_preview.queue_redraw()
+	elif key == Settings.BOARD_SHIMMER:
+		_shimmer_toggle.set_pressed_no_signal(Settings.board_shimmer)
+
+
+## An on/off switch bound to a boolean setting
+func _make_toggle(text: String, setting_key: String) -> CheckButton:
+	var toggle := CheckButton.new()
+	toggle.text = text
+	toggle.focus_mode = Control.FOCUS_NONE
+	toggle.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
+	toggle.button_pressed = bool(Settings.get_value(setting_key))
+	toggle.toggled.connect(func(on: bool) -> void: Settings.set_value(setting_key, on))
+	return toggle
 
 
 ## A titled group of rows
@@ -103,7 +112,7 @@ class ChipPairPreview:
 	const NAMES := {1: "Player 1", 2: "Player 2"}
 
 	func _init() -> void:
-		custom_minimum_size = Vector2(300.0, 108.0)
+		custom_minimum_size = Vector2(300.0, 100.0)
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	func _draw() -> void:

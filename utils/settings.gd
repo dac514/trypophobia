@@ -9,6 +9,7 @@ signal changed(key: String)
 const PATH = "user://settings.cfg"
 
 const DISTINCT_CHIPS = "a11y/distinct_chips"
+const BOARD_SHIMMER = "a11y/board_shimmer"
 const DIFFICULTY = "game/difficulty"
 const TUTORIAL_COMPLETED = "tutorial/completed"
 ## Reserved for the upcoming volume sliders (0.0 to 1.0)
@@ -17,6 +18,7 @@ const SFX_VOLUME = "audio/sfx"
 
 const DEFAULTS = {
 	DISTINCT_CHIPS: false,
+	BOARD_SHIMMER: true,
 	DIFFICULTY: Globals.Difficulty.HARD,
 	TUTORIAL_COMPLETED: false,
 	MUSIC_VOLUME: 1.0,
@@ -29,6 +31,13 @@ var distinct_chips: bool:
 		return bool(get_value(DISTINCT_CHIPS))
 	set(value):
 		set_value(DISTINCT_CHIPS, value)
+
+## The light that sweeps across the board; some players find it distracting
+var board_shimmer: bool:
+	get:
+		return bool(get_value(BOARD_SHIMMER))
+	set(value):
+		set_value(BOARD_SHIMMER, value)
 
 var difficulty: Globals.Difficulty:
 	get:
