@@ -52,11 +52,18 @@ var tutorial_completed: bool:
 		set_value(TUTORIAL_COMPLETED, value)
 
 var _config := ConfigFile.new()
+## True during the debug screenshot tour: it starts from the defaults (so it always shows a
+## first-time player's view) and never saves, so it can't change the player's real settings
+var _in_memory_only := false
 
 
 func _init() -> void:
-	# A missing or unreadable file just means defaults
-	_config.load(PATH)
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--screenshot-tour="):
+			_in_memory_only = true
+	if not _in_memory_only:
+		# A missing or unreadable file just means defaults
+		_config.load(PATH)
 
 
 func get_value(key: String) -> Variant:
@@ -69,7 +76,8 @@ func set_value(key: String, value: Variant) -> void:
 		return
 	var parts := key.split("/")
 	_config.set_value(parts[0], parts[1], value)
-	var error := _config.save(PATH)
-	if error != OK:
-		push_warning("Settings: could not save %s (error %d)" % [PATH, error])
+	if not _in_memory_only:
+		var error := _config.save(PATH)
+		if error != OK:
+			push_warning("Settings: could not save %s (error %d)" % [PATH, error])
 	changed.emit(key)
